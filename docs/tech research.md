@@ -7,3 +7,7 @@ This document explores different web technologies / ideologies and provides a ju
 ### Authentication
 ### Authorisation
 ### NodeJS Passport
+### OAuth2
+### OpenID
+Built ontop of OAuth2
+### JWT
