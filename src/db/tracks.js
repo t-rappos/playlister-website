@@ -10,7 +10,8 @@ function buildTrackTable(sequelize, forceNew){
       title:{type: Sequelize.STRING(50)},
       artist:{type: Sequelize.STRING(50)},
       album:{type: Sequelize.STRING(50)},
-      hash: {type: Sequelize.STRING,  allowNull: false},
+      filesize: {type: Sequelize.INTEGER,allowNull: false},
+      hash: {type: Sequelize.STRING,  allowNull: false, unique: true},
       dateAdded:{type: Sequelize.DATE,  allowNull: false}
     });
     

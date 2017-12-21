@@ -5,41 +5,20 @@ const path = require('path');
 var passport = require('passport');
 var Strategy = require('passport-local').Strategy;
 var BasicStrategy = require('passport-http').BasicStrategy;
-var db = require('./db');
-var bcrypt = require('bcrypt');
+var dbApi = require('./db/db_api.js');
+//var db = require('./db');
+//var bcrypt = require('bcrypt');
 
 
-function authenticateUser(username, password, cb){
-  db.User.findOne({where:{username:username}})
-  .then((user)=>{
-    if (!user) { return cb(null, false); }
-    if (!bcrypt.compareSync(password, user.password)) { return cb(null, false); }
-    return cb(null, user);
-  })
-  .catch((e)=>{
-    console.log(e);
-    return cb(err);
-  });
-}
-
-passport.use(new Strategy(authenticateUser));
-passport.use(new BasicStrategy(authenticateUser));
+passport.use(new Strategy(dbApi.authenticateUser));
+passport.use(new BasicStrategy(dbApi.authenticateUser));
 
 
 passport.serializeUser(function(user, cb) {
   cb(null, user.id);
 });
 
-passport.deserializeUser(function(id, cb) {
-  db.User.findOne({where:{id:id}})
-  .then((user)=>{
-    cb(null, user);
-  })
-  .catch((e)=>{
-    console.log(e);
-    return cb(err);
-  });
-});
+passport.deserializeUser(dbApi.passportDeserializeUser);
 
 var app = express();
 
@@ -47,7 +26,8 @@ var app = express();
 // logging, parsing, and session handling.
 app.use(require('morgan')('combined'));
 app.use(require('cookie-parser')());
-app.use(require('body-parser').urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveUninitialized:true,cookie: { secure: false } }));
 
 // Initialize Passport and restore authentication state, if any, from the
@@ -63,11 +43,9 @@ function isLoggedIn(req, res, next) {
       if (req.isAuthenticated())
           return next();
       // if they aren't redirect them to the home page
-      res.json([{
-        id: 1,
-        username: "not logged in"
-      }]);
+      res.send(404,"not logged in");
   }
+
 app.get('/api/me',
   passport.authenticate('basic', { session: false }),
   function(req, res) {
@@ -86,6 +64,77 @@ function(req, res) {
   }]);
 });
 
+/* GET register device*/
+app.get('/device/:deviceName/:deviceType',
+        passport.authenticate('basic', { session: false }),
+        (req,res)=>{
+          let id = req.user.id;
+          let deviceName = req.params.deviceName;
+          let deviceType = req.params.deviceType;
+          let deviceTypeId = -1;
+          if(deviceType === 'PC'){
+            deviceTypeId = 0;
+          }
+          if (deviceType === 'ANDROID') {
+            deviceTypeId = 1;
+          }
+          if(deviceTypeId == -1 || deviceName == "" 
+            || deviceName == undefined){
+            res.send(404,"Incorrect device details");
+          }
+          console.log("tried to register a device, userId="+id);
+          dbApi.registerDevice(deviceName,deviceTypeId,id)
+          .then((device)=>{
+            res.json(device);
+          })
+          .catch((e)=>{
+            res.send(404,"Couldn't register device");
+            console.log(e);
+          });
+        }
+);
+
+/* DELETE unregister device*/
+app.delete('/device/:deviceName/:deviceId',
+            passport.authenticate('basic', { session: false }),
+            (req,res)=>{
+              let deviceName = req.params.deviceName;
+              let deviceId = req.params.deviceId;
+              if( !deviceId  || deviceName == "" 
+                || deviceName == undefined){
+                res.send(404,"Incorrect device details");
+              }
+              dbApi.unregisterDevice(deviceName,deviceId)
+              .then(()=>{
+                console.log("device has been unregistered");
+                console.log(deviceName);
+                console.log(deviceId);
+                res.send(200,"Ok")
+              })
+              .catch((e)=>{
+                console.log(e);
+                res.send(404,"Incorrect device details");
+              });
+            }
+);
+
+/* POST send tracks (to server)*/
+app.post('/tracks',
+        passport.authenticate('basic', { session: false }),
+        (req,res)=>{
+          if(!(req.body && req.body.deviceId && req.body.tracks)){
+            res.send(404,"Tracks sent incorrectly");
+          }
+          dbApi.addTracks(req.user.id, req.body.deviceId, req.body.tracks)
+          .then(()=>{
+            console.log("tracks added to database correctly");
+            res.send(200,"Ok");
+          })
+          .catch((e)=>{
+            console.log(e);
+            res.send(404,"Tracks could not be stored");
+          })
+        });
 
 /* GET users listing. */
 app.get('/users', function(req, res, next) {
@@ -112,11 +161,7 @@ passport.authenticate('local'),
 
 app.post('/register',(req,res)=>{
     //TODO: think about moving DB calls out of this file.
-    db.User.create({
-      username: req.body.username,
-      password: bcrypt.hashSync(req.body.password, 8),
-      email : req.body.email
-    })
+    dbApi.createUser(req.body.username,req.body.password,req.body.email)
     .then((acc)=>{
       console.log("created registered account");
       res.redirect('/login');
@@ -126,7 +171,6 @@ app.post('/register',(req,res)=>{
     });
   });
 
-module.exports = app;
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
@@ -136,3 +180,5 @@ app.get('*', (req, res) => {
 
 
 app.listen(process.env.PORT || 8080);
+
+module.exports = app;
