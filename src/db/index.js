@@ -36,41 +36,43 @@ var Tracks = require('./tracks');
 var PlaylistTracks = require('./playlistTracks');
 var DeviceTracks = require('./deviceTracks');
 
+//TODO: move this into a global config / settings file?
 var forceNew = true; //remake tables, clears all data. Otherwise just create tables if they aren't present.
 
-var User;
-var Device;
-var Playlist;
-var Track;
-var DeviceTrack;
-var PlaylistTrack;
+let Tables = {};
+//let User = null;
+//let Device = null;
+//let Playlist = null;
+//let Track = null;
+//let DeviceTrack = null;
+//let PlaylistTrack = null;
 
 //TODO: does this need to be async?
 function makeTables(){
     return new Promise((res,rej)=>{
         Users.buildUserTable(sequelize, forceNew)
         .then((lUser)=>{
-            User = lUser;
-            return Devices.buildDeviceTable(sequelize, User, forceNew);
+            Tables.User = lUser;
+            return Devices.buildDeviceTable(sequelize, Tables.User, forceNew);
         })
         .then((lDevice)=>{
-            Device = lDevice;
-            return Playlists.buildPlaylistTable(sequelize, User, forceNew);
+            Tables.Device = lDevice;
+            return Playlists.buildPlaylistTable(sequelize, Tables.User, forceNew);
         })
         .then((lPlaylist)=>{
-            Playlist = lPlaylist;
+            Tables.Playlist = lPlaylist;
             return Tracks.buildTrackTable(sequelize, forceNew);
         })
         .then((lTrack)=>{
-            Track = lTrack;
-            return DeviceTracks.buildDeviceTrackTable(sequelize, Device, Track, forceNew);
+            Tables.Track = lTrack;
+            return DeviceTracks.buildDeviceTrackTable(sequelize, Tables.Device, Tables.Track, forceNew);
         })
         .then((lDeviceTrack)=>{
-            DeviceTrack = lDeviceTrack;
-            return PlaylistTracks.buildPlaylistTrackTable(sequelize, Playlist, Track, forceNew); 
+            Tables.DeviceTrack = lDeviceTrack;
+            return PlaylistTracks.buildPlaylistTrackTable(sequelize, Tables.Playlist, Tables.Track, forceNew); 
         })
         .then((lPlaylistTrack)=>{
-            PlaylistTrack = lPlaylistTrack;
+            Tables.PlaylistTrack = lPlaylistTrack;
             res();
         }).catch((e)=>{
             console.log(e);
@@ -81,8 +83,9 @@ function makeTables(){
 
 makeTables().then(()=>{
     //TODO: this db functionality should be somewhere else, e.g. user controller?
+    //if we include dbApi it makes a circular reference... 
     if(forceNew){   //insert dummy data
-        User.create({
+        Tables.User.create({
             username: "tom",
             password: bcrypt.hashSync("rap", 8),
             email : "tom@rap.com"
@@ -91,12 +94,8 @@ makeTables().then(()=>{
     console.log("finished creating tables");
 });
 
+console.log("Exporting modules");
 
-module.exports = {
-    User : User,
-    Device : Device,
-    Playlist : Playlist,
-    Track : Track,
-    DeviceTrack : DeviceTrack,
-    PlaylistTrack : PlaylistTrack
-};
+module.exports = Tables;
+
+console.log(module.exports);

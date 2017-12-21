@@ -6,9 +6,11 @@ function buildDeviceTable(sequelize, User, forceNew){
     let Device = sequelize.define('device', {
       id: { type: Sequelize.INTEGER, autoIncrement : true, primaryKey: true},
       name: {type: Sequelize.STRING(30)},
-      typeId : { type: Sequelize.INTEGER} //enum is bugged
+      typeId : { type: Sequelize.INTEGER}, //enum is bugged
+      associated : {type : Sequelize.BOOLEAN}
     });
-    Device.belongsTo(User,{foreignKey:'userId', foreignKeyConstraint:true})
+    Device.belongsTo(User,{foreignKey:'userId', foreignKeyConstraint:true});
+    Device.belongsTo(User,{foreignKey:'prevUserId', foreignKeyConstraint:true});
     // force: true will drop the table if it already exists
     Device.sync({force: forceNew}).then(() => {
       console.log("Device table constructed");
