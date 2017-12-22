@@ -137,6 +137,22 @@ app.post('/tracks',
           })
         });
 
+app.get('/tracks',
+        //passport.authenticate('basic', { session: false }),
+        isLoggedIn, //TODO: enable this!
+        (req,res)=>{
+          console.log("getting tracks for user");
+          dbApi.getUserTracks(req.user.id)
+          .then((tracks)=>{
+            res.json(tracks);
+          })
+          .catch((e)=>{
+            console.log(e.name);
+            res.send(404,"Couldn't get tracks");
+          })
+        }
+);
+
 /* GET users listing. */
 app.get('/users', function(req, res, next) {
 
@@ -179,6 +195,25 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname+'/build/index.html'));
 });
 
+/*
+function searchYoutube(){
+  var k = 'AIzaSyAzS50ztTHY_2wCYjXpov4dV4Dodi1C4yo';
+  var search = require('youtube-search');
+
+  var opts = {
+  maxResults: 1,
+  key: k
+  };
+
+  search('deadmau5 strobe', opts, function(err, results) {
+  if(err) return console.log(err);
+
+  console.dir(results);
+  });
+}
+
+searchYoutube();
+*/
 
 app.listen(process.env.PORT || 8080);
 

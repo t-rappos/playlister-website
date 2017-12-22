@@ -83,15 +83,15 @@ function ifRecordExists(findOneQuery,dataToMatch, defaultRecord, then, otherwise
     return new Promise((res,rej)=>{
         findOneQuery(dataToMatch).then((record)=>{
             if(record){
-                console.log("record already exists");
+                //console.log("record already exists");
                 res(then(record));
             } else {
-                console.log("record doesnt exist");
+                //console.log("record doesnt exist");
                 res(otherwise(defaultRecord));
             }
         })
         .catch((e)=>{
-            console.error(e);
+            console.error(e.name);
             rej(e);
         });
     });
@@ -107,7 +107,7 @@ function addTrack(t){
         filesize: t.filesize,
         hash: t.hash,
         dateAdded: new Date().getTime()
-    });
+    }).catch((e)=>{console.log("couldn't add track!");});
 }
 
 function addDeviceTrack(track, deviceId){
@@ -116,7 +116,7 @@ function addDeviceTrack(track, deviceId){
         dateLastScanned : new Date().getTime(),
         deviceId : deviceId,
         trackId : track.id
-    });
+    }).catch((e)=>{console.log("couldn't add device track!");});
 }
 
 function addDeviceTracks(tracks, deviceId){
@@ -131,7 +131,7 @@ function addDeviceTracks(tracks, deviceId){
                     track,
                     (deviceTrack)=>{
                         return new Promise((res,rej)=>{ //DeviceTrack exists
-                            console.log("addDeviceTracks: updating deviceTrack");
+                            //console.log("addDeviceTracks: updating deviceTrack");
                             res(db.DeviceTrack.update(
                                 {dateLastScanned : new Date().getTime()},
                                 {where : {trackId : track.id, deviceId : deviceId}}//id : deviceTrack.id}}
@@ -140,7 +140,7 @@ function addDeviceTracks(tracks, deviceId){
                     },
                     (track)=>{
                         return new Promise((res,rej)=>{   //DeviceTrack doesnt exist
-                            console.log("addDeviceTracks: creating deviceTrack");
+                            //console.log("addDeviceTracks: creating deviceTrack");
                             res(addDeviceTrack(track,deviceId));
                         })
                     ;}
@@ -176,6 +176,48 @@ function userOwnsDevice(userId, deviceId){
     });
 }
 
+function getUserDevices(pUserId){
+    return db.Device.findAll({where:{userId : pUserId}});
+}
+
+function getUserTracks(userId){
+    return new Promise((resolve, reject)=>{
+        console.log("getUserTracks: about to get tracks");
+        let resultTracks = [];
+        let promises = [];
+        getUserDevices(userId)
+        .then((devices)=>{
+            console.log(devices);
+            devices.forEach((d)=>{
+                console.log("creating promise for device", d.id);
+                promises.push(
+                    db.DeviceTrack.findAll({
+                        where:{deviceId : d.id},
+                        include: [db.Track]})
+                    .then((tracks)=>{
+                        console.log("tracks found for device : " + d.id + " : " + tracks.length)
+                        resultTracks.push.apply(resultTracks,tracks);
+                    })
+                    .catch((e)=>{
+                        console.log(e.name);
+                    })
+                );
+            });
+            return Promise.all(promises);
+        })
+        .then((res)=>{
+            console.log("getUserTracks: Retreived user tracks successfully");
+            resolve(resultTracks);
+        })
+        .catch((e)=>{
+            console.log(e.name);
+        })
+    });
+    //get all device ids
+
+    //get all tracks for each device
+}
+
 function addTracks(userId, deviceId, trackData){
     return new Promise((resolve,reject)=>{
         if(!(userId && deviceId && trackData)){
@@ -204,7 +246,7 @@ function addTracks(userId, deviceId, trackData){
                                     console.log("addTracks: returning new track");
                                     res(track);
                                 }).catch((e)=>{
-                                    console.log(e);
+                                    console.log(e.name);
                                     rej(e);
                                 });
                             });
@@ -231,5 +273,6 @@ module.exports = {
     createUser :  createUser,
     registerDevice : registerDevice,
     unregisterDevice : unregisterDevice,
-    addTracks : addTracks
+    addTracks : addTracks,
+    getUserTracks: getUserTracks
 };

@@ -61,7 +61,7 @@ function makeTables(){
         })
         .then((lPlaylist)=>{
             Tables.Playlist = lPlaylist;
-            return Tracks.buildTrackTable(sequelize, forceNew);
+            return Tracks.buildTrackTable(sequelize,Tables.Device, forceNew);
         })
         .then((lTrack)=>{
             Tables.Track = lTrack;
@@ -72,6 +72,8 @@ function makeTables(){
             return PlaylistTracks.buildPlaylistTrackTable(sequelize, Tables.Playlist, Tables.Track, forceNew); 
         })
         .then((lPlaylistTrack)=>{
+            Tables.Device.belongsToMany(Tables.Track, { through : Tables.DeviceTrack});
+            Tables.Track.belongsToMany(Tables.Device, {through : Tables.DeviceTrack});
             Tables.PlaylistTrack = lPlaylistTrack;
             res();
         }).catch((e)=>{
