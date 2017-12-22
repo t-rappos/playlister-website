@@ -26,8 +26,8 @@ var app = express();
 // logging, parsing, and session handling.
 app.use(require('morgan')('combined'));
 app.use(require('cookie-parser')());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true,limit: '50mb' }));
+app.use(bodyParser.json({limit: '50mb'}));
 app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveUninitialized:true,cookie: { secure: false } }));
 
 // Initialize Passport and restore authentication state, if any, from the
@@ -125,6 +125,7 @@ app.post('/tracks',
           if(!(req.body && req.body.deviceId && req.body.tracks)){
             res.send(404,"Tracks sent incorrectly");
           }
+          //console.log(req.body);
           dbApi.addTracks(req.user.id, req.body.deviceId, req.body.tracks)
           .then(()=>{
             console.log("tracks added to database correctly");
