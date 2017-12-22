@@ -195,9 +195,9 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname+'/build/index.html'));
 });
 
-/*
+
 function searchYoutube(){
-  var k = 'AIzaSyAzS50ztTHY_2wCYjXpov4dV4Dodi1C4yo';
+  k = require('./db/local_config.js').googleApi;
   var search = require('youtube-search');
 
   var opts = {
@@ -212,8 +212,8 @@ function searchYoutube(){
   });
 }
 
-searchYoutube();
-*/
+//searchYoutube();
+
 
 app.listen(process.env.PORT || 8080);
 
