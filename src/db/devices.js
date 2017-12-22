@@ -5,7 +5,7 @@ function buildDeviceTable(sequelize, User, forceNew){
   return new Promise((res,rej)=>{
     let Device = sequelize.define('device', {
       id: { type: Sequelize.INTEGER, autoIncrement : true, primaryKey: true},
-      name: {type: Sequelize.STRING(30)},
+      name: {type: Sequelize.STRING(100)},
       typeId : { type: Sequelize.INTEGER}, //enum is bugged
       associated : {type : Sequelize.BOOLEAN}
     });

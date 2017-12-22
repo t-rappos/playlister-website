@@ -5,11 +5,11 @@ function buildTrackTable(sequelize, forceNew){
   return new Promise((res,rej)=>{
     let Track = sequelize.define('track', {
       id: { type: Sequelize.INTEGER, autoIncrement : true, primaryKey: true},
-      filename: {type: Sequelize.STRING(50),  allowNull: false},
-      path : {type: Sequelize.STRING(260),  allowNull: false},  //TODO : make a path table? to store duplicated paths
-      title:{type: Sequelize.STRING(50)},
-      artist:{type: Sequelize.STRING(50)},
-      album:{type: Sequelize.STRING(50)},
+      filename: {type: Sequelize.STRING(100),  allowNull: false},
+      path : {type: Sequelize.STRING(300),  allowNull: false},  //TODO : make a path table? to store duplicated paths
+      title:{type: Sequelize.STRING(100)},
+      artist:{type: Sequelize.STRING(100)},
+      album:{type: Sequelize.STRING(100)},
       filesize: {type: Sequelize.INTEGER,allowNull: false},
       hash: {type: Sequelize.STRING,  allowNull: false, unique: true},
       dateAdded:{type: Sequelize.DATE,  allowNull: false}

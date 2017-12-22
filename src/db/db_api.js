@@ -156,7 +156,8 @@ function addDeviceTracks(tracks, deviceId){
 //returns promise(yes/no)
 function userOwnsDevice(userId, deviceId){
     return new Promise((res,rej)=>{
-        console.log("userOwnsDevice :Checking if user owns device");
+        console.log("userOwnsDevice :Checking if user owns device, uId: "
+         + userId +" owns dId: "+deviceId );
         db.Device.findOne({where:{userId : userId, id : deviceId}})
         .then((d)=>{
             if(d){
