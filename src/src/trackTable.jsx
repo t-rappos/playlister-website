@@ -15,8 +15,27 @@ class TrackTable extends Component{
   render() {
     return (
       <div>
+        <h3>{this.props.youtubeId}</h3>
         <ReactTable
+        getTdProps={(state, rowInfo, column, instance) => {
+          return {
+            onClick: (e, handleOriginal) => {
+
+              console.log(rowInfo.row.YoutubeId);
+              this.props.setYoutubeIdCallback(rowInfo.row.YoutubeId);
+              // IMPORTANT! React-Table uses onClick internally to trigger
+              // events like expanding SubComponents and pivots.
+              // By default a custom 'onClick' handler will override this functionality.
+              // If you want to fire the original onClick handler, call the
+              // 'handleOriginal' function.
+              if (handleOriginal) {
+                handleOriginal()
+              }
+            }
+          }
+        }}
           data={this.props.data}
+          
           columns={[
             {
               Header: "Name",
@@ -83,6 +102,11 @@ class TrackTable extends Component{
                     Header: "Title",
                     id: "title",
                     accessor: d => d.track.title
+                  },
+                  {
+                    Header: "youtubeId",
+                    id: "YoutubeId",
+                    accessor: d => d.track.youtube_track.youtubeId
                   }
                 /*{
                   Header: "First Name",
@@ -130,6 +154,8 @@ class TrackTable extends Component{
 
 TrackTable.propTypes = {
     data : PropTypes.arrayOf(PropTypes.object).isRequired,
+    youtubeId : PropTypes.string,
+    setYoutubeIdCallback : PropTypes.func.isRequired
 };
 
 export default TrackTable;

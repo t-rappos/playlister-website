@@ -1,7 +1,7 @@
 
 const Sequelize = require('sequelize');
 
-function buildTrackTable(sequelize, forceNew){
+function buildTrackTable(sequelize, YoutubeTrack, forceNew){
   return new Promise((res,rej)=>{
     let Track = sequelize.define('track', {
       id: { type: Sequelize.INTEGER, autoIncrement : true, primaryKey: true},
@@ -15,8 +15,7 @@ function buildTrackTable(sequelize, forceNew){
       dateAdded:{type: Sequelize.DATE,  allowNull: false}
     });
     
-    //Track.belongsTo(Device,{foreignKey:'deviceId', foreignKeyConstraint:true});
-    //Track.belongsTo(Playlist,{foreignKey:'deviceId', foreignKeyConstraint:true});
+    Track.belongsTo(YoutubeTrack,{foreignKey:'youtubeTrackId', foreignKeyConstraint:true});
   
     // force: true will drop the table if it already exists
     Track.sync({force: forceNew}).then(() => {

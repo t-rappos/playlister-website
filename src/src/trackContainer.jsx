@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import './App.css';
 import TrackTable from './trackTable.jsx'
+import TrackYoutubeDisplay from './trackYoutubeDisplay.jsx'
 
 class TrackContainer extends Component {
     
-  state = {tracks:[]}
+  state = {tracks:[], youtubeId : ""}
 
   componentDidMount() {
       console.log("TrackContainer: componentDidMount");
@@ -22,12 +23,23 @@ class TrackContainer extends Component {
    });
   }
   
+  setYoutubeId(ytid){
+    this.setState({youtubeId:ytid});
+  }
 
+  //TODO: move .bind(this)?
   render() {
     return (
       <div>
         <p>TrackContainer</p>
-        <TrackTable data = {this.state.tracks}/>
+        <TrackYoutubeDisplay
+          youtubeId = {this.state.youtubeId}
+        />
+        <TrackTable 
+          data = {this.state.tracks}
+          youtubeId = {this.state.youtubeId}
+          setYoutubeIdCallback = {this.setYoutubeId.bind(this)}
+        />
       </div>
     );
   }

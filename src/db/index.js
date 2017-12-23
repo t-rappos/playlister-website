@@ -33,9 +33,11 @@ if(sequelize){
 var Users = require('./users');
 var Devices = require('./devices');
 var Playlists = require('./playlists');
+var YoutubeTracks = require('./youtubeTracks');
 var Tracks = require('./tracks');
 var PlaylistTracks = require('./playlistTracks');
 var DeviceTracks = require('./deviceTracks');
+
 
 //TODO: move this into a global config / settings file?
 var forceNew = true; //remake tables, clears all data. Otherwise just create tables if they aren't present.
@@ -62,7 +64,12 @@ function makeTables(){
         })
         .then((lPlaylist)=>{
             Tables.Playlist = lPlaylist;
-            return Tracks.buildTrackTable(sequelize,Tables.Device, forceNew);
+            return YoutubeTracks.buildYoutubeTrackTable(sequelize, forceNew);
+            //return Tracks.buildTrackTable(sequelize,Tables.Device, forceNew);
+        })
+        .then((lytt)=>{
+            Tables.YoutubeTrack = lytt;
+            return Tracks.buildTrackTable(sequelize,Tables.YoutubeTrack, forceNew);
         })
         .then((lTrack)=>{
             Tables.Track = lTrack;

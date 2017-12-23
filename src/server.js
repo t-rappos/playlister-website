@@ -195,26 +195,6 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname+'/build/index.html'));
 });
 
-
-function searchYoutube(){
-  k = require('./db/local_config.js').googleApi;
-  var search = require('youtube-search');
-
-  var opts = {
-  maxResults: 1,
-  key: k
-  };
-
-  search('deadmau5 strobe', opts, function(err, results) {
-  if(err) return console.log(err);
-
-  console.dir(results);
-  });
-}
-
-//searchYoutube();
-
-
 app.listen(process.env.PORT || 8080);
 
 module.exports = app;
