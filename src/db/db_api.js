@@ -3,6 +3,7 @@ var db = require('../db');
 const Sequelize = require('sequelize');
 let googleApiKey = require('./local_config.js').googleApi;
 var search = require('youtube-search');
+var Promise = require("bluebird");
 
 //MISC FUNCTIONS FOR SERVER
 function authenticateUser(username, password, cb){
@@ -33,23 +34,18 @@ function passportDeserializeUser(id, cb) {
 
 //API functionality
 
-function createUser(username, password, email){
-    return new Promise((res,rej)=>{
-        console.log("creating user");
-        db.User.create({
+async function createUser(username, password, email){
+    console.log("creating user");
+    try{
+        return await db.User.create({
             username: username,
             password: bcrypt.hashSync(password, 8),
             email : email
-          })
-          .then((acc)=>{
-            console.log("createUser called");
-            res(acc);
-          })
-          .catch((e)=>{
-            console.error(e);
-            rej(e);
           });
-    });
+    }catch(e){
+        console.error(e);
+        throw e;
+    }
 }
 
 function registerDevice(deviceName, deviceTypeId, userId){
@@ -61,58 +57,167 @@ function registerDevice(deviceName, deviceTypeId, userId){
         });
 }
 
-function unregisterDevice(deviceName, deviceId){
-    return new Promise((res,rej)=>{
-        db.Device.findOne({where:{id : deviceId}})
-        .then((device)=>{
-            if(!device || device.name != deviceName){
-                rej("Device name didnt match id");
-            } else {
-                return db.Device.update({associated : false, prevUserId : device.userId},
-                                        {where:{id : deviceId}});
-            }
-        })
-        .then(()=>{
-            res();
-        })
+async function unregisterDevice(deviceName, deviceId){
+    try{
+        const device = await db.Device.findOne({where:{id : deviceId}});
+        if(!device || device.name != deviceName){
+            throw("Device name didnt match id");
+        } else {
+            return db.Device.update({associated : false, prevUserId : device.userId},
+                {where:{id : deviceId}});
+        }
+    } catch (e){
+        console.log(e);
+        throw(e);
+    }
+}
+
+function generateYoutubeSearchTerm(artist, title){
+    if(!artist){artist = "";}
+    if(!title){title = "";}
+    let res = artist.toUpperCase().trim() + " " + title.toUpperCase().trim();
+    //console.log(res);
+    return res;
+}
+
+function getYoutubeTrack(track){
+    const searchTerm = generateYoutubeSearchTerm(track.artist,track.title);
+    return db.YoutubeTrack.findOne({where:{searchTerm : searchTerm}});
+}
+
+function makeYoutubeTrack(track){
+    const searchTerm = generateYoutubeSearchTerm(track.artist,track.title);
+    return db.YoutubeTrack.create({searchTerm : searchTerm});
+}
+
+async function checkUserOwnsDevice(userId, deviceId){
+    try{
+        const device = await db.Device.findOne({where:{userId : userId, id : deviceId}});
+        return device ? true : false;
+    } catch (e) {
+        console.error(e);
+        throw(e);
+    }
+}
+
+function getUserDevices(pUserId){
+    return db.Device.findAll({where:{userId : pUserId}});
+}
+
+function getDeviceTracksForDevice(deviceId){
+    return db.DeviceTrack.findAll({
+        where:{deviceId : deviceId},
+        include :[{
+            model:db.Track,
+            include:[db.YoutubeTrack]
+        }]
     });
 }
 
-//passes found record to then(...) OR
-//passes defaultRecord to otherwise(...) if record doesnt exist
-//returns the result of either then or otherwise promises
-function ifRecordExists(findOneQuery,dataToMatch, defaultRecord, then, otherwise){
-    return new Promise((res,rej)=>{
-        findOneQuery(dataToMatch).then((record)=>{
-            if(record){
-                //console.log("record already exists");
-                res(then(record));
-            } else {
-                //console.log("record doesnt exist");
-                res(otherwise(defaultRecord));
-            }
-        })
-        .catch((e)=>{
-            console.error(e.name);
-            rej(e);
+
+async function getUserTracks(userId){
+    try{
+        const devices = await getUserDevices(userId);
+        const deviceTracks = [];
+        const deviceTrackArraysPromise 
+            = devices.map((device)=>{
+                return getDeviceTracksForDevice(device.id)
+                        .then((dtracks)=>{
+                            deviceTracks.push.apply(deviceTracks,dtracks);
+                        });
         });
-    });
+        await Promise.all(deviceTrackArraysPromise);
+        return deviceTracks;
+    } catch(e){
+        console.error(e);
+        throw e;
+    }
 }
 
-function addTrack(t){
-    console.log("addTrack : " + t.searchTerm);
+async function addYoutubeTrack(track){
+    try{
+        const ytt = await getYoutubeTrack(track);
+        //console.log("addYoutubeTrack : " + ytt);
+        if(ytt){
+            return {youtubeTrack : ytt, track : track};
+        } else {
+            const newYttT = await makeYoutubeTrack(track);
+            if(newYttT.searchTerm){
+                //console.log("make ytt : " + newYttT.searchTerm);
+            } else {
+                console.log("failed to make : " + newYttT);
+            }
+            return {youtubeTrack : newYttT, track : track};
+        }
+    }
+    catch (e) {
+        console.log("addYoutubeTrack: " + e.name + " : " + e.message);
+        return null;
+    }
+}
+
+async function makeYoutubeTracks(tracks){
+   //this works sequentially, the log is called after all have been processed.
+    const ytTracks = await Promise.mapSeries(tracks, (t)=>{
+                                return addYoutubeTrack(t);
+                            });
+    return ytTracks;
+}
+
+/*
+    for t : track
+        if t exists *check hash*
+            return t
+        else
+            make track
+    addDeviceTracks(tracks)
+*/
+
+
+function addTrack(track, youtubeTrackId){
     return db.Track.create({
-        filename: t.track.filename,
-        path : t.track.path,
-        title: t.track.title,
-        artist: t.track.artist,
-        album: t.track.album,
-        filesize: t.track.filesize,
-        hash: t.track.hash,
+        filename: track.filename,
+        path : track.path,
+        title: track.title,
+        artist: track.artist,
+        album: track.album,
+        filesize: track.filesize,
+        hash: track.hash,
         dateAdded: new Date().getTime(),
-        youtubeTrackId : t.id
+        youtubeTrackId : youtubeTrackId
     }).catch((e)=>{console.log("couldn't add track!");});
 }
+
+
+async function makeTrack(trackData, youtubeTrackId){    
+    try{
+        const track = await db.Track.findOne({where:{hash : trackData.hash}});
+        //console.log("makeTrack : " + track);
+        if(track){
+            return track;
+        } else {
+            const newTrack = await addTrack(trackData, youtubeTrackId);
+            if(newTrack.id){
+                //console.log("make track : " + newTrack.id);
+            } else {
+                console.log("failed to make : " + newTrack);
+            }
+            return newTrack;
+        }
+    }
+    catch (e) {
+        console.log("makeTrack: " + e.name + " : " + e.message);
+        return null;
+    }
+}
+
+async function makeTracks(trackDataArr){
+    const tracks = await Promise.mapSeries(trackDataArr, (t)=>{
+        return makeTrack(t.track, t.youtubeTrack.id);
+    });
+    return tracks;
+}
+
 
 function addDeviceTrack(track, deviceId){
     return db.DeviceTrack.create({
@@ -123,270 +228,64 @@ function addDeviceTrack(track, deviceId){
     }).catch((e)=>{console.log("couldn't add device track!");});
 }
 
-function generateYoutubeSearchTerm(artist, title){
-    let res = artist.toUpperCase().trim() + " " + title.toUpperCase().trim();
-    console.log(res);
-    return res;
-}
+/*
+    for t : tracks
+        if deviceTrack(t) exists 
+                update deviceTrack 
+        else
+                add deviceTrack addDeviceTrack(track,deviceId);
+*/
 
-
-function addNewYoutubeTrack(track){
-    
-    return new Promise((resolve, reject) => {
-        console.log("finding new youtube track for track");
-        var searchTerm = generateYoutubeSearchTerm(track.artist,track.title);
-        let p = ifRecordExists(
-            (data)=>{return db.YoutubeTrack.findOne(
-                {where:{searchTerm : searchTerm}})},
-            {},
-            track,
-            (youtubeTrack)=>{
-                return new Promise((res,rej)=>{ //youtubeTrack exists
-                    console.log("found a youtube track for a new track");
-                    youtubeTrack.track = track;
-                    res(youtubeTrack);
-                });
-            },
-            (track)=>{
-                return new Promise((res,rej)=>{   //DeviceTrack doesnt exist
-                    console.log("No youtube track exists, lets make a new one");
-                    //console.log("addDeviceTracks: creating deviceTrack");
-                    db.YoutubeTrack.create({searchTerm : searchTerm})
-                    .then((ytt)=>{
-                        console.log("No youtube track exists, added successfully");
-                        ytt.track = track;
-                        res(ytt);
-                    })
-                    .catch((e)=>{
-                        console.log("No youtube track exists, couldnt make new one");
-                        console.log(e);
-                        console.log("finding the ytt that conflicted");
-                        return db.YoutubeTrack.findOne({where:{searchTerm : searchTerm}})
-                        .then((ytt)=>{
-                            if(ytt){
-                                console.log("finding the ytt that conflicted : found");
-                                //console.log(ytt);
-                                ytt.track = track;
-                                res(ytt);
-                            } else {
-                                console.log("finding the ytt that conflicted : coudlnt find");
-                                //console.log(ytt);
-                                res({track : track});
-                            }
-                        })
-                        .catch((e)=>{
-                            console.log("finding the ytt that conflicted : failed query");
-                            console.log(e)
-                            res({track : track})
-                        });
-                    });
-                });
+async function makeDeviceTrack(track, deviceId){
+    try{
+        const deviceTrack 
+            = await db.DeviceTrack.findOne({where:{trackId : track.id, deviceId: deviceId}});
+        //console.log("addDeviceTrack : " + deviceTrack);
+        if(deviceTrack){
+            //console.log("updating newDeviceTrack: " + deviceTrack.id);
+            const updatedDeviceTrack = await db.DeviceTrack.update(
+                {dateLastScanned : new Date().getTime()},
+                {where : {trackId : track.id, deviceId : deviceId}}
+            );
+            //console.log("finished updating newDeviceTrack: " + deviceTrack.id);
+            return updatedDeviceTrack;
+        } else {
+            const newDeviceTrack = await addDeviceTrack(track, deviceId);
+            if(newDeviceTrack.id){
+                //console.log("make newDeviceTrack : " + newDeviceTrack.id);
+            } else {
+                console.log("failed to make newDeviceTrack: " + newDeviceTrack);
             }
-        )
-        resolve(p);
-    });
-    
-        /*
-        db.YoutubeTrack.findOrCreate({
-            where:{
-                searchTerm : generateYoutubeSearchTerm(track.artist,track.title)
-            },
-            defaults:{
-                searchTerm : generateYoutubeSearchTerm(track.artist,track.title)
-            }
-        })
-        .then((ytt)=>{
-            ytt.track = track;
-            resolve(ytt);
-        })
-        .catch((e)=>{
-            console.log(e.name);
-            console.log("Couln't add youtube track");
-            console.log(e);
-        })*/
-    
-    //return 
-}
-
-function addNewYoutubeTracks(tracks){
-    //find or add if it doesnt exist
-    return new Promise((resolve, reject) => {
-        let proms = [];
-        tracks.forEach((t)=>{
-            proms.push(addNewYoutubeTrack(t));
-        })
-        console.log("returning youtube track promise.all : " + proms.length);
-        resolve(Promise.all(proms).catch((e)=>{console.log(e)}));
-    });
-}
-
-function addDeviceTracks(tracks, deviceId){
-    return new Promise((resolve, reject)=>{
-        let promises2 = []; 
-        tracks.forEach((track)=>{
-            if(track){
-                promises2.push(
-                    ifRecordExists(
-                        (data)=>{return db.DeviceTrack.findOne(
-                            {where:{trackId : data.trackId, deviceId: data.deviceId}});},
-                        {trackId : track.id, deviceId : deviceId},
-                        track,
-                        (deviceTrack)=>{
-                            return new Promise((res,rej)=>{ //DeviceTrack exists
-                                //console.log("addDeviceTracks: updating deviceTrack");
-                                //TODO: It might have a different path though... 
-                                //Make deviceTrack to be unique by hash+path
-                                res(db.DeviceTrack.update(
-                                    {dateLastScanned : new Date().getTime()},
-                                    {where : {trackId : track.id, deviceId : deviceId}}//id : deviceTrack.id}}
-                                ));
-                            });
-                        },
-                        (track)=>{
-                            return new Promise((res,rej)=>{   //DeviceTrack doesnt exist
-                                //console.log("addDeviceTracks: creating deviceTrack");
-                                res(addDeviceTrack(track,deviceId));
-                            })
-                        ;}
-                    )
-                );
-            }
-        });
-        console.log("addDeviceTracks: finished adding tracks & deviceTracks");
-        resolve(Promise.all(promises2));
-    });
-}
-
-
-//returns promise(yes/no)
-function userOwnsDevice(userId, deviceId){
-    return new Promise((res,rej)=>{
-        console.log("userOwnsDevice :Checking if user owns device, uId: "
-         + userId +" owns dId: "+deviceId );
-        db.Device.findOne({where:{userId : userId, id : deviceId}})
-        .then((d)=>{
-            if(d){
-                console.log("userOwnsDevice :User owns device");
-                res();
-            }else{
-                console.log("userOwnsDevice :User doesnt own device");
-                rej("userOwnsDevice :User doesnt own device");
-            }
-        })
-        .catch((e)=>{
-            console.log("userOwnsDevice : error")
-            console.error(e);
-            rej(e);
-        });
-    });
-}
-
-function getUserDevices(pUserId){
-    return db.Device.findAll({where:{userId : pUserId}});
-}
-
-function getUserTracks(userId){
-    return new Promise((resolve, reject)=>{
-        console.log("getUserTracks: about to get tracks");
-        let resultTracks = [];
-        let promises = [];
-        getUserDevices(userId)
-        .then((devices)=>{
-            console.log(devices);
-            devices.forEach((d)=>{
-                console.log("creating promise for device", d.id);
-                promises.push(
-                    db.DeviceTrack.findAll({
-                        where:{deviceId : d.id},
-                        include :[{
-                            model:db.Track,
-                            include:[db.YoutubeTrack]
-                        }]
-                    })
-                    .then((tracks)=>{
-                        console.log("tracks found for device : " + d.id + " : " + tracks.length)
-                        resultTracks.push.apply(resultTracks,tracks);
-                    })
-                    .catch((e)=>{
-                        console.log(e);
-                    })
-                );
-            });
-            return Promise.all(promises);
-        })
-        .then((res)=>{
-            console.log("getUserTracks: Retreived user tracks successfully");
-            resolve(resultTracks);
-        })
-        .catch((e)=>{
-            console.log(e);
-        })
-    });
-    //get all device ids
-
-    //get all tracks for each device
-}
-
-function addTracks(userId, deviceId, trackData){
-    return new Promise((resolve,reject)=>{
-        if(!(userId && deviceId && trackData)){
-            reject("addTracks: Incorrect input arguments");
+            return newDeviceTrack;
         }
-        userOwnsDevice(userId,deviceId)
-        .then(()=>{
-            console.log("about to add new youtube tracks");
-            return addNewYoutubeTracks(trackData);
-        })
-        .then((youtubeTracks)=>{
-            let promises = [];
-            console.log("about to add tracks");
-            youtubeTracks.forEach((t)=>{
-                promises.push(
-                    ifRecordExists(
-                        (hash)=>{return db.Track.findOne({where:{hash : t.track.hash}});},
-                        t.track.hash,
-                        t,  //def record
-                        (track)=>{  //TODO: can i make this not use a promise?
-                            return new Promise((res,rej)=>{
-                                console.log("addTracks: returning track that already existed");
-                                //promises.push(track);
-                                res(track);
-                            });
-                        }, 
-                        //else
-                        (t)=>{
-                            return new Promise((res,rej)=>{
-                                addTrack(t).then((track)=>{
-                                    console.log("addTracks: returning new track");
-                                    res(track);
-                                }).catch((e)=>{
-                                    console.log(e.name);
-                                    rej(e);
-                                });
-                            });
-                        }
-                    )
-                );
-            });
-            console.log("addTracks: finished adding tracks, about to add deviceTracks");
-            return Promise.all(promises);
-        })
-        .then((results)=>{
-            return addDeviceTracks(results, deviceId);
-        })
-        .then(()=>{
-            return syt();
-        })
-        .then(()=>{
-            resolve();
-        })
-        .catch((e)=>{
-            console.log(e);
-            reject(e);
-        });
-    });
+    }
+    catch (e) {
+        console.log("makeDeviceTrack: " + e.name + " : " + e.message);
+        return null;
+    }
 }
 
+async function makeDeviceTracks(tracks, deviceId){
+    const deviceTracks = await Promise.mapSeries(tracks, (t)=>{
+        return makeDeviceTrack(t, deviceId);
+    });
+    return deviceTracks;
+}
+
+async function addTracks(userId, deviceId, trackData){
+    if(!(userId && deviceId && trackData)){
+        throw Error("addTracks incorrect params : " + userId + " : " + deviceId+ " : " + trackData);
+    }
+    const userOwnsDevice = await checkUserOwnsDevice(userId, deviceId);
+    if(userOwnsDevice === false){
+        throw Error("User doesnt own device : " + userId + " : " + deviceId+ " : " + trackData);
+    }
+    const youtubeTracks = await makeYoutubeTracks(trackData);
+    const tracks = await makeTracks(youtubeTracks);
+    const deviceTracks = await makeDeviceTracks(tracks, deviceId);
+    await syt();
+    console.log("finished addTracks");
+}
 
 function searchYoutube(term){
     return new Promise((resolve, reject)=>{
@@ -400,7 +299,7 @@ function searchYoutube(term){
                 reject(err);
            }
            if(results && results.length > 0 && results[0].id){
-               console.log(results);
+               //console.log(results);
                resolve(
                    db.YoutubeTrack.update({youtubeId : results[0].id}, {where :{searchTerm : term}})
                );
@@ -410,23 +309,7 @@ function searchYoutube(term){
         });
     });
   }
-/*function searchYoutube(){
-  k = require('./db/local_config.js').googleApi;
-  var search = require('youtube-search');
 
-  var opts = {
-  maxResults: 1,
-  key: k
-  };
-
-  search('deadmau5 strobe', opts, function(err, results) {
-  if(err) return console.log(err);
-
-  console.dir(results);
-  });
-}
-
-//searchYoutube(); */
 function syt(){
     
     return new Promise((resolve, reject) => {
@@ -434,8 +317,8 @@ function syt(){
         .then((ytts)=>{
             let proms = []; 
             ytts.forEach((y)=>{
-                console.log(y.searchTerm);
-                console.log(y.youtubeId);
+                //console.log(y.searchTerm);
+                //console.log(y.youtubeId);
                 proms.push(
                     searchYoutube(y.searchTerm).then((t)=>{console.log(t.youtubeId);})
                 );
@@ -455,46 +338,3 @@ module.exports = {
     addTracks : addTracks,
     getUserTracks: getUserTracks
 };
-
-/*db.Track.findOrCreate({
-                        where:{
-                            hash : t.track.hash
-                        },
-                        defaults:{
-                            filename: t.track.filename,
-                            path : t.track.path,
-                            title: t.track.title,
-                            artist: t.track.artist,
-                            album: t.track.album,
-                            filesize: t.track.filesize,
-                            hash: t.track.hash,
-                            dateAdded: new Date().getTime(),
-                            youtubeTrackId : t.id
-                        }
-                    }) */
-
-/*
-                    ifRecordExists(
-                        (hash)=>{return db.Track.findOne({where:{hash : t.hash}});},
-                        t.hash,
-                        t,  //def record
-                        (track)=>{  //TODO: can i make this not use a promise?
-                            return new Promise((res,rej)=>{
-                                console.log("addTracks: returning track that already existed");
-                                //promises.push(track);
-                                res(track);
-                            });
-                        }, 
-                        //else
-                        (t)=>{
-                            return new Promise((res,rej)=>{
-                                addTrack(t).then((track)=>{
-                                    console.log("addTracks: returning new track");
-                                    res(track);
-                                }).catch((e)=>{
-                                    console.log(e.name);
-                                    rej(e);
-                                });
-                            });
-                        }
-                    )*/
