@@ -69,14 +69,9 @@ class TrackTable extends Component{
                     accessor: d => d.track.artist
                   },
                   {
-                    Header: "Track Date Added (To account)",
-                    id: "trackdateAdded",
-                    accessor: d => d.track.dateAdded
-                  },
-                  {
                     Header: "Filename",
                     id: "filename",
-                    accessor: d => d.track.filename
+                    accessor: d => d.filename
                   },
                   {
                     Header: "Filesize",
@@ -96,7 +91,7 @@ class TrackTable extends Component{
                   {
                     Header: "Path",
                     id: "path",
-                    accessor: d => d.track.path
+                    accessor: d => d.path
                   },
                   {
                     Header: "Title",
