@@ -129,6 +129,27 @@ app.delete(
     },
 );
 
+
+/* DELETE remove tracks from device */
+app.delete(
+    '/tracks',
+    passport.authenticate('basic', { session: false }),
+    (req, res) => {
+        if (!(req.body && req.body.deviceId && req.body.tracks)) {
+            res.send(404, 'track data sent incorrectly');
+        }
+        dbApi.removeTracksFromDevice(req.user.id, req.body.deviceId, req.body.tracks)
+            .then(() => {
+                console.log('tracks removed from database correctly');
+                res.send(200, 'Ok');
+            })
+            .catch((e) => {
+                console.log(e);
+                res.send(404, 'Tracks could not be deleted');
+            });
+    },
+);
+
 /* POST send tracks (to server) */
 app.post(
     '/tracks',
@@ -138,7 +159,7 @@ app.post(
             res.send(404, 'Tracks sent incorrectly');
         }
         // console.log(req.body);
-        dbApi.addTracks(req.user.id, req.body.deviceId, req.body.tracks)
+        dbApi.addTracksToDevice(req.user.id, req.body.deviceId, req.body.tracks)
             .then(() => {
                 console.log('tracks added to database correctly');
                 res.send(200, 'Ok');

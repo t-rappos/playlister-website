@@ -266,7 +266,6 @@ async function makeDeviceTracks(tracks, deviceId) {
     return deviceTracks;
 }
 
-
 function searchYoutube(term) {
     return new Promise((resolve, reject) => {
         const opts = {
@@ -293,12 +292,12 @@ function searchYoutube(term) {
 
 async function generateInitialYoutubeIds() {
     console.log("finding youtube ids");
-    const youtubeTracks = await db.YoutubeTrack.findAll({ limit: "50" });
+    const youtubeTracks = await db.YoutubeTrack.findAll({ where: { youtubeId: null }, limit: "5" });
     await Promise.all(youtubeTracks.map(ytt => searchYoutube(ytt.searchTerm)));
     console.log("finished finding youtube ids");
 }
 
-async function addTracks(userId, deviceId, trackData) {
+async function addTracksToDevice(userId, deviceId, trackData) {
     if (!(userId && deviceId && trackData)) {
         throw Error(`addTracks incorrect params : ${userId} : ${deviceId} : ${trackData}`);
     }
@@ -313,12 +312,29 @@ async function addTracks(userId, deviceId, trackData) {
     console.log("finished addTracks");
 }
 
+async function removeTracksFromDevice(userId, deviceId, trackData) {
+    // remove from device_tracks where deviceId = deviceId, path in paths, filename in filenames
+    if (!(userId && deviceId && trackData)) {
+        throw Error(`addTracks incorrect params : ${userId} : ${deviceId} : ${trackData}`);
+    }
+    const userOwnsDevice = await checkUserOwnsDevice(userId, deviceId);
+    if (userOwnsDevice === false) {
+        throw Error(`User doesnt own device : ${userId} : ${deviceId} : ${trackData}`);
+    }
+    const paths = trackData.map((td => td.path));
+    const filenames = trackData.map((td => td.filename));
+    const affectedRows
+    = await db.DeviceTrack.destroy({ where: { path: paths, filename: filenames } });
+    console.log(`destroyed ${affectedRows} device tracks`);
+}
+
 module.exports = {
     authenticateUser,
     passportDeserializeUser,
     createUser,
     registerDevice,
     unregisterDevice,
-    addTracks,
+    addTracksToDevice,
+    removeTracksFromDevice,
     getUserTracks,
 };
