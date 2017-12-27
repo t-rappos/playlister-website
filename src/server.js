@@ -130,9 +130,9 @@ app.delete(
 );
 
 
-/* DELETE remove tracks from device */
-app.delete(
-    '/tracks',
+/* POST remove tracks from device */
+app.post(
+    '/removetracks',
     passport.authenticate('basic', { session: false }),
     (req, res) => {
         if (!(req.body && req.body.deviceId && req.body.tracks)) {
@@ -170,6 +170,11 @@ app.post(
             });
     },
 );
+
+// client can call this to see if database has been reset or server has been reloaded.
+app.get('/status', passport.authenticate('basic', { session: false }), async (req, res) => {
+    res.json(await dbApi.getServerStatus());
+});
 
 app.get(
     '/tracks',

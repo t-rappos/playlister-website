@@ -328,6 +328,14 @@ async function removeTracksFromDevice(userId, deviceId, trackData) {
     console.log(`destroyed ${affectedRows} device tracks`);
 }
 
+// TODO: this is a duplicated function from index.js. Find a way to resolve this
+async function getServerStatus() {
+    return (await db.ServerStatus.findAll({
+        limit: 1,
+        order: [['createdAt', 'DESC']],
+    }))[0];
+}
+
 module.exports = {
     authenticateUser,
     passportDeserializeUser,
@@ -337,4 +345,5 @@ module.exports = {
     addTracksToDevice,
     removeTracksFromDevice,
     getUserTracks,
+    getServerStatus,
 };
