@@ -42,7 +42,7 @@ const ServerStatus = require('./serverStatus');
 
 // TODO: move this into a global config / settings file?
 // remake tables, clears all data. Otherwise just create tables if they aren't present.
-const forceNew = true; // ^
+const forceNew = false; // ^
 const Tables = {};
 
 async function makeTables() {

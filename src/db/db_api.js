@@ -177,7 +177,11 @@ function addTrack(track, youtubeTrackId) {
         hash: track.hash,
         // dateAdded: new Date().getTime(),
         youtubeTrackId,
-    }).catch(() => { console.log("couldn't add track!"); });
+    }).catch((e) => {
+        console.log("couldn't add track!");
+        console.error(`makeTrack: ${e.name} : ${e.message}`);
+        return null;
+    });
 }
 
 
@@ -190,13 +194,13 @@ async function makeTrack(trackData, youtubeTrackId) {
         }
 
         const newTrack = await addTrack(trackData, youtubeTrackId);
-        if (!newTrack.id) {
+        if (!newTrack) {
             console.log(`failed to make : ${newTrack}`);
         }
         return { track: newTrack, trackData };
     } catch (e) {
         console.log(`makeTrack: ${e.name} : ${e.message}`);
-        return null;
+        return { track: null, trackData };
     }
 }
 
@@ -236,11 +240,12 @@ async function makeDeviceTrack(track, trackData, deviceId) {
         const deviceTrack
             = await db.DeviceTrack.findOne({
                 where: {
-                    trackId: track.id, deviceId, path: trackData.path, filename: trackData.filename,
+                    path: trackData.path, filename: trackData.filename,
                 },
             });
 
         if (deviceTrack) {
+            console.log(`device track was valid, updating: ${trackData.filename}`);
             const updatedDeviceTrack = await db.DeviceTrack.update(
                 { dateLastScanned: new Date().getTime() },
                 { where: { trackId: track.id, deviceId } },
@@ -248,10 +253,13 @@ async function makeDeviceTrack(track, trackData, deviceId) {
 
             return updatedDeviceTrack;
         }
+        console.log(`device track was invalid, creating new: ${trackData.filename}`);
         const newDeviceTrack
          = await addDeviceTrack(trackData.filename, trackData.path, track.id, deviceId);
-        if (!newDeviceTrack.id) {
+        if (!newDeviceTrack) {
             console.log(`failed to make newDeviceTrack: ${newDeviceTrack}`);
+        } else {
+            console.log(`created new device track: ${trackData.filename}`);
         }
         return newDeviceTrack;
     } catch (e) {
@@ -261,8 +269,18 @@ async function makeDeviceTrack(track, trackData, deviceId) {
 }
 
 async function makeDeviceTracks(tracks, deviceId) {
-    const deviceTracks
-    = await Promise.mapSeries(tracks, t => makeDeviceTrack(t.track, t.trackData, deviceId));
+    // const deviceTracks
+    //= await Promise.mapSeries(tracks, t => makeDeviceTrack(t.track, t.trackData, deviceId));
+
+    const deviceTracks = await Promise.mapSeries(tracks, (t) => {
+        try {
+            return makeDeviceTrack(t.track, t.trackData, deviceId);
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
+    });
+
     return deviceTracks;
 }
 

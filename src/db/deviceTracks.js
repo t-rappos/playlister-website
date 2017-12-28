@@ -4,7 +4,7 @@ const Sequelize = require('sequelize');
 function buildDeviceTrackTable(sequelize, Device, Track, forceNew) {
     return new Promise((res, rej) => {
         const DeviceTrack = sequelize.define('device_track', {
-            filename: { type: Sequelize.STRING(100), allowNull: false },
+            filename: { type: Sequelize.STRING(200), allowNull: false },
             path: { type: Sequelize.STRING(300), allowNull: false },
             dateAdded: { type: Sequelize.DATE, allowNull: false },
             dateLastScanned: { type: Sequelize.DATE, allowNull: false },
