@@ -74,6 +74,7 @@ async function unregisterDevice(deviceName, deviceId) {
 }
 
 function generateYoutubeSearchTerm(artist, title) {
+    if (artist === "" || title === "") { return "xxxxx"; }
     const lArtist = artist || "";
     const lTitle = title || "";
 
@@ -285,6 +286,7 @@ async function makeDeviceTracks(tracks, deviceId) {
 }
 
 function searchYoutube(term) {
+    if (term === "xxxxx") { return null; }
     return new Promise((resolve, reject) => {
         const opts = {
             maxResults: 1,
@@ -302,7 +304,8 @@ function searchYoutube(term) {
                     { where: { searchTerm: term } },
                 ));
             } else {
-                reject(new Error("Couldnt find video for youtube track"));
+                console.log("Couldnt find video for youtube track for : " + term);
+                resolve(null);
             }
         });
     });
