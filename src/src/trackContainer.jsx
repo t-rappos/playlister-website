@@ -7,6 +7,19 @@ class TrackContainer extends Component {
     
   state = {tracks:[], youtubeId : ""}
 
+  async componentDidMount(){
+    try{
+      const tracks = await fetch('/tracks', { method: "GET", credentials: 'include'   });
+      const tracksFromJSON = await tracks.json();
+      this.setState({tracks:tracksFromJSON});
+    } catch (e) {
+      console.log("Couldn't load tracks",e);
+    }
+    
+  }
+  
+
+  /*
   componentDidMount() {
       console.log("TrackContainer: componentDidMount");
     fetch('/tracks', { method: "GET", credentials: 'include'   })
@@ -22,6 +35,7 @@ class TrackContainer extends Component {
      });
    });
   }
+  */
   
   setYoutubeId(ytid){
     this.setState({youtubeId:ytid});

@@ -51,25 +51,15 @@ function isLoggedIn(req, res, next) {
     return null;
 }
 
+// TODO: is this used?
+// can we replace a call to this with one that does
+// something functional as well as authenticate
+
 app.get(
     '/api/me',
     passport.authenticate('basic', { session: false }),
     (req, res) => {
         res.json(req.user);
-    },
-);
-
-// require('connect-ensure-login').ensureLoggedIn() //<-- this doesnt work?
-app.get(
-    '/settings', isLoggedIn,
-    (req, res) => {
-        res.json([{
-            id: 1,
-            username: "s1",
-        }, {
-            id: 2,
-            username: "D0loresH4z11",
-        }]);
     },
 );
 
@@ -178,8 +168,7 @@ app.get('/status', passport.authenticate('basic', { session: false }), async (re
 
 app.get(
     '/tracks',
-    // passport.authenticate('basic', { session: false }),
-    isLoggedIn, // TODO: enable this!
+    isLoggedIn,
     (req, res) => {
         console.log('getting tracks for user');
         dbApi.getUserTracks(req.user.id)
@@ -193,7 +182,9 @@ app.get(
     },
 );
 
+
 /* GET users listing. */
+/*
 app.get('/users', (req, res) => {
     res.json([{
         id: 1,
@@ -203,7 +194,21 @@ app.get('/users', (req, res) => {
         username: "D0loresH4z11",
     }]);
 });
+*/
 
+
+app.get('/logout', (req, res) => {
+    req.logout();
+    res.redirect('/');
+    console.log("destroyed session for " + req.user);
+    /*
+    console.log("destroying session for " + req.user);
+    req.session.destroy(() => {
+        console.log("destroyed session for " + req.user);
+        res.redirect('/');
+    });
+    */
+});
 
 app.post(
     '/login',
