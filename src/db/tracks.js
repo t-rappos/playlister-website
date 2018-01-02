@@ -5,9 +5,9 @@ function buildTrackTable(sequelize, YoutubeTrack, forceNew) {
     return new Promise((res, rej) => {
         const Track = sequelize.define('track', {
             id: { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true },
-            title: { type: Sequelize.STRING(100) },
-            artist: { type: Sequelize.STRING(100) },
-            album: { type: Sequelize.STRING(100) },
+            title: { type: Sequelize.STRING(500) },
+            artist: { type: Sequelize.STRING(500) },
+            album: { type: Sequelize.STRING(500) },
             filesize: { type: Sequelize.INTEGER, allowNull: false },
             hash: { type: Sequelize.STRING, allowNull: false, unique: true },
         });

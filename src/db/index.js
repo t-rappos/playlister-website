@@ -1,25 +1,26 @@
 const Sequelize = require('sequelize');
 const bcrypt = require('bcrypt');
 
-let sequelize = null;
+const Tables = {};
+Tables.sequelize = null;
 
 let localConfig = null;
 try {
     localConfig = require('../db/local_config.js');
-    sequelize = new Sequelize(localConfig.config);
+    Tables.sequelize = new Sequelize(localConfig.config);
 } catch (e) {
     console.log(e);
     console.log('couldnt load local database configuration, must use production config');
     if (process.env.DATABASE_URL && process.env.DATABASE_URL != '') {
         console.log('found production config');
-        sequelize = new Sequelize(process.env.DATABASE_URL);
+        Tables.sequelize = new Sequelize(process.env.DATABASE_URL);
     } else {
         console.log('couldnt find production config');
     }
 }
 
-if (sequelize) {
-    sequelize.authenticate().then(() => {
+if (Tables.sequelize) {
+    Tables.sequelize.authenticate().then(() => {
         console.log('Connection has been established successfully.');
     })
         .catch((err) => {
@@ -42,21 +43,21 @@ const ServerStatus = require('./serverStatus');
 
 // TODO: move this into a global config / settings file?
 // remake tables, clears all data. Otherwise just create tables if they aren't present.
-const forceNew = false; // ^
-const Tables = {};
+const forceNew = true; // ^
+
 
 async function makeTables() {
     try {
-        Tables.User = await Users.buildUserTable(sequelize, forceNew);
-        Tables.Device = await Devices.buildDeviceTable(sequelize, Tables.User, forceNew);
-        Tables.Playlist = await Playlists.buildPlaylistTable(sequelize, Tables.User, forceNew);
-        Tables.YoutubeTrack = await YoutubeTracks.buildYoutubeTrackTable(sequelize, forceNew);
-        Tables.Track = await Tracks.buildTrackTable(sequelize, Tables.YoutubeTrack, forceNew);
-        Tables.DeviceTrack = await DeviceTracks.buildDeviceTrackTable(sequelize, Tables.Device, Tables.Track, forceNew);
-        Tables.PlaylistTrack = await PlaylistTracks.buildPlaylistTrackTable(sequelize, Tables.Playlist, Tables.Track, forceNew);
+        Tables.User = await Users.buildUserTable(Tables.sequelize, forceNew);
+        Tables.Device = await Devices.buildDeviceTable(Tables.sequelize, Tables.User, forceNew);
+        Tables.Playlist = await Playlists.buildPlaylistTable(Tables.sequelize, Tables.User, forceNew);
+        Tables.YoutubeTrack = await YoutubeTracks.buildYoutubeTrackTable(Tables.sequelize, forceNew);
+        Tables.Track = await Tracks.buildTrackTable(Tables.sequelize, Tables.YoutubeTrack, forceNew);
+        Tables.DeviceTrack = await DeviceTracks.buildDeviceTrackTable(Tables.sequelize, Tables.Device, Tables.Track, forceNew);
+        Tables.PlaylistTrack = await PlaylistTracks.buildPlaylistTrackTable(Tables.sequelize, Tables.Playlist, Tables.Track, forceNew);
         await Tables.Device.belongsToMany(Tables.Track, { through: Tables.DeviceTrack });
         await Tables.Track.belongsToMany(Tables.Device, { through: Tables.DeviceTrack });
-        Tables.ServerStatus = await ServerStatus.buildServerStatusTable(sequelize);
+        Tables.ServerStatus = await ServerStatus.buildServerStatusTable(Tables.sequelize);
     } catch (e) {
         console.error(e);
         throw e;

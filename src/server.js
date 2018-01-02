@@ -171,9 +171,10 @@ app.get(
     isLoggedIn,
     (req, res) => {
         console.log('getting tracks for user');
-        dbApi.getUserTracks(req.user.id)
+        dbApi.getTracks(req.user.id)
             .then((tracks) => {
-                res.json(tracks);
+                console.log(`Returning ${tracks ? tracks[0].length : "0"} tracks`);
+                res.json(tracks ? tracks[0] : []);
             })
             .catch((e) => {
                 console.log(e.name);
@@ -200,7 +201,7 @@ app.get('/users', (req, res) => {
 app.get('/logout', (req, res) => {
     req.logout();
     res.redirect('/');
-    console.log("destroyed session for " + req.user);
+    console.log(`destroyed session for ${  req.user}`);
     /*
     console.log("destroying session for " + req.user);
     req.session.destroy(() => {

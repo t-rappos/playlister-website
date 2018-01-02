@@ -41,67 +41,50 @@ class TrackTable extends Component{
               Header: "Name",
               columns: [
                   {
-                    Header: "Date Added (to device)",
-                    id: "dateAdded",
-                    accessor: d => d.dateAdded
-                  },
-                  {
-                    
-                    Header: "Date Last Scanned",
-                    id: "dateLastScanned",
-                    accessor: d => d.dateLastScanned
-                  },
-                  {
-                    
                     Header: "Device Id",
                     id: "deviceId",
-                    accessor: d => d.deviceId
-                  },
-                  {
-                    
-                    Header: "Album",
-                    id: "trackalbum",
-                    accessor: d => d.track.album
-                  },
-                  {
-                    Header: "Artist",
-                    id: "artist",
-                    accessor: d => d.track.artist
-                  },
-                  {
-                    Header: "Filename",
-                    id: "filename",
-                    accessor: d => d.filename
-                  },
-                  {
-                    Header: "Filesize",
-                    id: "filesize",
-                    accessor: d => d.track.filesize
-                  },
-                  {
-                    Header: "Hash",
-                    id: "hash",
-                    accessor: d => d.track.hash
-                  },
-                  {
-                    Header: "Track Id",
-                    id: "trackid",
-                    accessor: d => d.track.id
-                  },
-                  {
-                    Header: "Path",
-                    id: "path",
-                    accessor: d => d.path
+                    accessor: d => d.devices
                   },
                   {
                     Header: "Title",
                     id: "title",
-                    accessor: d => d.track.title
+                    accessor: d => d.title
+                  },
+                  {
+                    Header: "Album",
+                    id: "trackalbum",
+                    accessor: d => d.album
+                  },
+                  {
+                    Header: "Artist",
+                    id: "artist",
+                    accessor: d => d.artist
+                  },
+                  {
+                    Header: "Filesize",
+                    id: "filesize",
+                    accessor: d => d.filesize
+                  },
+                  {
+                    Header: "Hash",
+                    id: "hash",
+                    accessor: d => d.hash
+                  },
+                  
+                  {
+                    Header: "Paths",
+                    id: "paths",
+                    accessor: d => d.paths
+                  },
+                  {
+                    Header: "Filenames",
+                    id: "filenames",
+                    accessor: d => d.filenames
                   },
                   {
                     Header: "youtubeId",
                     id: "YoutubeId",
-                    accessor: d => d.track.youtube_track.youtubeId
+                    accessor: d => d.youtubeId
                   }
                 /*{
                   Header: "First Name",
