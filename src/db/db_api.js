@@ -1,8 +1,8 @@
 const bcrypt = require('bcrypt');
 const db = require('../db');
 const TrackController = require('./controllers/tracks.js');
+const YoutubeController = require('./controllers/youtube.js');
 
-// MISC FUNCTIONS FOR SERVER
 function authenticateUser(username, password, cb) {
     db.User.findOne({ where: { username } })
         .then((user) => {
@@ -26,10 +26,6 @@ function passportDeserializeUser(id, cb) {
             return cb(e);
         });
 }
-
-// End MISC FUNCTIONS FOR SERVER
-
-// API functionality
 
 async function createUser(username, password, email) {
     console.log("creating user");
@@ -71,46 +67,6 @@ async function unregisterDevice(deviceName, deviceId) {
     }
 }
 
-/*
-async function getDeviceTracksForDevice(deviceId) {
-    return db.DeviceTrack.findAll({
-        where: { deviceId },
-        include: [{
-            model: db.Track,
-            include: [db.YoutubeTrack],
-        }],
-    });
-}
-*/
-
-/*
-async function getUserTracks(userId) {
-    try {
-        const devices = await getUserDevices(userId);
-        const deviceTracks = [];
-        const deviceTrackArraysPromise
-            = devices.map(device => getDeviceTracksForDevice(device.id)
-                .then((dtracks) => {
-                    deviceTracks.push(...dtracks);
-                }));
-        await Promise.all(deviceTrackArraysPromise);
-        return deviceTracks;
-    } catch (e) {
-        console.error(e);
-        throw e;
-    }
-}*/
-
-
-/*
-    for t : track
-        if t exists *check hash*
-            return t
-        else
-            make track
-    addDeviceTracks(tracks)
-*/
-
 // TODO: this is a duplicated function from index.js. Find a way to resolve this
 async function getServerStatus() {
     return (await db.ServerStatus.findAll({
@@ -129,4 +85,5 @@ module.exports = {
     removeTracksFromDevice: TrackController.removeTracksFromDevice,
     getServerStatus,
     getTracks: TrackController.getTracks,
+    getYoutubeIdForHash: YoutubeController.getYoutubeIdForHash,
 };

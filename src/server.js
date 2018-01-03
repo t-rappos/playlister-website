@@ -166,6 +166,12 @@ app.get('/status', passport.authenticate('basic', { session: false }), async (re
     res.json(await dbApi.getServerStatus());
 });
 
+app.get('/youtubeId/:hash', isLoggedIn, async (req, res) => {
+    const f = await dbApi.getYoutubeIdForHash(req.params.hash);
+    console.log(f);
+    res.json(f);
+});
+
 app.get(
     '/tracks',
     isLoggedIn,

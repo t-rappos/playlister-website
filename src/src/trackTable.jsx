@@ -22,7 +22,7 @@ class TrackTable extends Component{
             onClick: (e, handleOriginal) => {
 
               console.log(rowInfo.row.YoutubeId);
-              this.props.setYoutubeIdCallback(rowInfo.row.YoutubeId);
+              this.props.setYoutubeIdCallback(rowInfo.row.YoutubeId, rowInfo.row.hash);
               // IMPORTANT! React-Table uses onClick internally to trigger
               // events like expanding SubComponents and pivots.
               // By default a custom 'onClick' handler will override this functionality.

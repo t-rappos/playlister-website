@@ -16,7 +16,6 @@ function generateSearchTermArray(data) {
     return data.map(d => generateYoutubeSearchTerm(d.artist, d.title));
 }
 
-
 function searchYoutube(term) {
     if (term === "xxxxx") { return null; }
     return new Promise((resolve, reject) => {
@@ -50,7 +49,39 @@ async function generateInitialYoutubeIds() {
     console.log("finished finding youtube ids");
 }
 
+async function getYTTFromHash(hash) {
+    return db.Track.findOne({
+        where: { hash },
+        include: [{
+            model: db.YoutubeTrack,
+        }],
+    });
+}
+
+// TODO: this can be sped up by having searchYoutube()
+// not update the database synchronously, and just return early with the youtubeId
+async function getYoutubeIdForHash(hash) {
+    if (!hash) { return { youtubeTrackId: "" }; }
+    try {
+        const ytt = await getYTTFromHash(hash);
+        if (!ytt || !ytt.youtube_track) { return { error: "no track or ytt" }; }
+        if (!ytt.youtube_track.searchTerm) { return { error: "no search term" }; }
+        if (!ytt.youtube_track.youtubeId) {
+            await searchYoutube(ytt.youtube_track.searchTerm);
+            const updatedYtt = await getYTTFromHash(hash);
+            return updatedYtt && updatedYtt.youtube_track
+                ? { youtubeTrackId: updatedYtt.youtube_track.youtubeId }
+                : { error: "no track or ytt2" };
+        }
+        return { youtubeTrackId: ytt.youtube_track.youtubeId };
+    } catch (e) {
+        console.error(e);
+        return { error: "get ytt id error" };
+    }
+}
+
 module.exports = {
     generateInitialYoutubeIds,
     generateSearchTermArray,
+    getYoutubeIdForHash,
 };

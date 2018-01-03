@@ -8,6 +8,7 @@ class TrackContainer extends Component {
   state = {tracks:[], youtubeId : ""}
 
   async componentDidMount(){
+    this.setYoutubeId = this.setYoutubeId.bind(this);
     try{
       const tracks = await fetch('/tracks', { method: "GET", credentials: 'include'   });
       const tracksFromJSON = await tracks.json();
@@ -18,30 +19,24 @@ class TrackContainer extends Component {
     
   }
   
-
-  /*
-  componentDidMount() {
-      console.log("TrackContainer: componentDidMount");
-    fetch('/tracks', { method: "GET", credentials: 'include'   })
-   .then((res1)=>{
-     console.log("obtained tracks :" + res1.length);
-     res1.json()
-     .then((res2)=>{
-       console.log("converted tracks from JSON", res2);
-       this.setState({tracks:res2});
-     })
-     .catch((e)=>{
-         console.log("Couldn't load tracks, user isnt logged in?");
-     });
-   });
-  }
-  */
-  
-  setYoutubeId(ytid){
-    this.setState({youtubeId:ytid});
+  async setYoutubeId(ytid, hash){
+    if(!ytid){
+      try{
+        const result = await fetch('/youtubeId/'+hash, { method: "GET", credentials: 'include'   });
+        if(result){
+          const data = await result.json();
+          if(data && data.youtubeTrackId){
+            this.setState({youtubeId: data.youtubeTrackId});
+          }
+        }
+      } catch (e) {
+        console.log("Couldn't load YTT");
+      }
+    } else {
+      this.setState({youtubeId:ytid});
+    }
   }
 
-  //TODO: move .bind(this)?
   render() {
     return (
       <div>
@@ -52,7 +47,7 @@ class TrackContainer extends Component {
         <TrackTable 
           data = {this.state.tracks}
           youtubeId = {this.state.youtubeId}
-          setYoutubeIdCallback = {this.setYoutubeId.bind(this)}
+          setYoutubeIdCallback = {this.setYoutubeId}
         />
       </div>
     );

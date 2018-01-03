@@ -79,8 +79,6 @@ async function addYoutubeTracks2(data) {
 
 async function addTracks22(data, youtubeTracks) {
     if (youtubeTracks.length !== data.length) {
-        // console.error("addTracks22: arrays incorrect length! data: " + data.length + ", ytt: " + youtubeTracks.length);
-        // compareDiffArray(data.map(d => d.filename), youtubeTracks)
         console.log(data.map(d => d.filename));
         console.log(youtubeTracks.map(d => d.searchTerm));
         throw new Error("addTracks22: arrays incorrect length!");
@@ -110,8 +108,6 @@ async function addTracks22(data, youtubeTracks) {
     ON CONFLICT ("hash") DO NOTHING
     RETURNING *;
     `;
-
-    //console.log(query1);
 
     try {
         const hashes = data.map(d => d.hash);
@@ -155,7 +151,6 @@ async function addDeviceTracks2(data, tracks, deviceId) {
     ON CONFLICT ("filename", "path") DO UPDATE SET "dateLastScanned" = NOW();
     `;
     // TODO: is the on conflict value correct, think about the same file+path of different devices...
-    //console.log(query1);
 
     try {
         const deviceTracks = await db.sequelize.query(query1, { returning: true, raw: true, type: 'INSERT' });
@@ -178,13 +173,12 @@ async function addTracks2(userId, deviceId, data) {
     const ytt = await addYoutubeTracks2(data);
     const tracks = await addTracks22(data, ytt);
     await addDeviceTracks2(data, tracks, deviceId);
-    await Youtube.generateInitialYoutubeIds();
+    // await Youtube.generateInitialYoutubeIds();
 }
 
 async function addTracksToDevice(userId, deviceId, trackData) {
     console.log("addTracksToDevice");
     await addTracks2(userId, deviceId, trackData);
-
     console.log("finished addTracks");
 }
 
