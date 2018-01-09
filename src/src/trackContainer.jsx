@@ -3,6 +3,7 @@ import fetch from "isomorphic-fetch";
 import './App.css';
 import TrackTable from './trackTable';
 import TrackYoutubeDisplay from './trackYoutubeDisplay';
+import TrackTreeContainer from './tree/trackTreeContainer';
 
 
 const NULL_SEARCH_TERM = '2Vv-BfVoq4g'; // TODO: update this automatically?
@@ -175,11 +176,16 @@ class TrackContainer extends Component {
           youtubeId={this.state.youtubeId}
           nextTrackCallback={this.onNextTrackRequested}
         />
-        <TrackTable
-          data={this.state.tracks}
-          youtubeId={this.state.youtubeId}
-          setYoutubeIdCallback={this.setYoutubeId}
-        />
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <TrackTreeContainer />
+          <TrackTable
+            data={this.state.tracks}
+            youtubeId={this.state.youtubeId}
+            setYoutubeIdCallback={this.setYoutubeId}
+            style={{ margin: "auto" }}
+          />
+        </div>
+
       </div>
     );
   }
