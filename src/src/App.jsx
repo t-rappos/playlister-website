@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import fetch from "isomorphic-fetch";
 import './App.css';
 import TrackContainer from './trackContainer';
+import EditText from './tree/editText';
 
 async function logoutHandler(e) {
   e.preventDefault();
@@ -20,6 +21,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
+        <EditText />
         <TrackContainer />
         <h3>Login</h3>
         <form action="/login" method="post">

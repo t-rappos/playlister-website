@@ -18,7 +18,6 @@ import RowTagsDropDown from './row/rowTagsDropDown';
 
 const TrackTable = props => (
   <div>
-    <h3>{props.youtubeId}</h3>
     <ReactTable
       getTdProps={(state, rowInfo /* , column, instance */) => ({
         onClick: (e, handleOriginal) => {

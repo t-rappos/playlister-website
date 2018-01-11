@@ -1,8 +1,12 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { Treebeard } from 'react-treebeard';
-import Decorators from './trackTreeDecorators';
-import TrackTreeStyle from './trackTreeStyle';
+import TreeNode from './treeNode';
+
+// data= {name, children[]}
+
+
+// {this.props.data.children && this.state.open ? this.renderChildren() : ""}
+// {this.props.data.children ? <div onClick = {this.onClick} >{ToggleIconText}</div> : "" }
 
 class TrackTree extends Component {
   constructor() {
@@ -12,7 +16,7 @@ class TrackTree extends Component {
   }
   onToggle(node, toggled) {
     if (!node.children) { console.log("leaf node clicked"); }
-    console.log(node, toggled);
+    console.log("onToggle", node, toggled);
     console.log(this.state);
     if (this.state.cursor) {
       const cursorNextState = this.state.cursor;
@@ -25,12 +29,11 @@ class TrackTree extends Component {
   }
   render() {
     return (
-      <Treebeard
-        data={this.props.data}
-        onToggle={this.onToggle}
-        style={TrackTreeStyle}
-        decorators={Decorators}
-      />);
+      <div style={{ minWidth: '200px' }} >
+        <TreeNode data ={this.props.data} hidden={false} />
+      </div>
+
+    );
   }
 }
 
@@ -39,3 +42,13 @@ TrackTree.propTypes = {
 };
 
 export default TrackTree;
+
+
+/*
+      <Treebeard
+        data={this.props.data}
+        onToggle={this.onToggle}
+        style={TrackTreeStyle}
+        decorators={Decorators}
+      />
+    */
