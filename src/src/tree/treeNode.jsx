@@ -2,14 +2,13 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import EditText from "./editText";
+import { VelocityComponent, VelocityTransitionGroup } from 'velocity-react';
 
 /*
   NOTE: symbols looked for are:
     playlistId: a playlist leaf node.
     isAddNewPlaylist: true, the button to add a new playlist
     paths: path so far from device, e.g. pc:/c:/music/dnb
-
-
 */
 
 const iconStyle = { display: "inline", marginLeft: '4px' };
@@ -64,8 +63,6 @@ const TrackLabel = (node) => {
     );
 };
 
-// {(node.playlistId === undefined) ? TrackLabel(node) : PlaylistLabel(node)}
-
 class TreeNode extends Component {
   constructor() {
     super();
@@ -76,11 +73,22 @@ class TreeNode extends Component {
   onClick() {
     this.setState({ open: !this.state.open });
   }
+
   renderChildren() {
     const children
-      = this.props.data.children.map(c => <TreeNode data={c} hidden={!this.state.open} depth={this.props.depth + 1} />);
-    return (<div >{children}</div>); // style={{ position: "relative", left: "10px" }}
+      = this.props.data.children.map(c =>
+        (<TreeNode
+          data={c}
+          hidden={!this.state.open}
+          depth={this.props.depth + 1}
+        />));
+    return (
+      <VelocityComponent animation={{ opacity: this.state.open ? 1 : 0 }} duration={200}>
+        <div >{children}</div>
+      </VelocityComponent>
+    );
   }
+
   render() {
     let spaces = "";
     for (let i = 0; i < this.props.depth; i += 1) { spaces += "···"; }
@@ -88,8 +96,9 @@ class TreeNode extends Component {
     const ToggleIconText = this.state.open ? "▼" : "►";
     const hiddenStyle = (this.props.hidden) ? { display: "none", textAlign: "left" } : { textAlign: "left" };
     return (
+
       <div style={hiddenStyle}>
-        <div style={{ display: "inline", float: "left", color: 'rgba(0,0,0,0)'}}>{leftPad}</div>
+        <div style={{ display: "inline", float: "left", color: 'rgba(0,0,0,0)' }}>{leftPad}</div>
         {this.props.data.children ? <div onClick={this.onClick} style={{ display: "inline", cursor: 'pointer' }}>{ToggleIconText}</div> : "" }
         <div style={{ display: "inline" }}>{ (this.props.data.playlistId === undefined) ? TrackLabel(this.props.data) : PlaylistLabel(this.props.data) }</div>
         {this.props.data.children ? this.renderChildren() : ""}
