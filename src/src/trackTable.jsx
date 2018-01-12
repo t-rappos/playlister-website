@@ -98,6 +98,12 @@ const TrackTable = props => (
               id: 'tagsDropDown',
               Cell: row => (<RowTagsDropDown tagNames={['liquid', 'neuro']} tagIds={[0, 1]} tagSelectedArray={[false, true]} />),
             },
+            {
+              Header: "Youtube Id",
+              id: "YoutubeId",
+              accessor: d => d.youtubeId,
+              // show: false,
+            },
           ],
         },
       ]}
