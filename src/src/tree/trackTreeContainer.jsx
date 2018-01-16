@@ -1,4 +1,4 @@
-// import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Multimap from 'multimap';
 import Tree from './trackTree';
@@ -105,7 +105,7 @@ class TrackTreeContainer extends Component {
     const r = convertRawFilepaths(filepathsRaw, 0);
     r.forEach((x) => { fillTreeWithData(x, ''); });
     // fillTreeWithData(r[0], '');
-    console.log(r);
+    //console.log(r);
 
     const p = convertPlaylistData(playlists);
     const data = { name: 'tracks', children: [...r, p] };
@@ -117,15 +117,15 @@ class TrackTreeContainer extends Component {
     try {
       const paths = await fetch('/paths', { method: "GET", credentials: 'include' });
       const pathsFromJSON = await paths.json();
-      console.log(pathsFromJSON);
+      //console.log(pathsFromJSON);
       // this.setState({ paths: pathsFromJSON });
-      const pathArray = pathsFromJSON.map(n => trimSlashes("(" + n.did +") " + n.path));
+      const pathArray = pathsFromJSON.map(n => trimSlashes("(" + n.did +") " + n.path).replace(/\\/g, "/"));
       // console.log(pathArray);
 
       // trim off leading or tailing '/'
 
       const r = convertRawFilepaths(pathArray, 0);
-      console.log(r);
+      //console.log(r);
 
       r.forEach((x) => { fillTreeWithData(x, ''); });
       // fillTreeWithData(r[0], '');
@@ -142,7 +142,12 @@ class TrackTreeContainer extends Component {
   }
 
   render() {
-    return (<div> <Tree data={this.state.data} /> </div>);
+    return (<div> <Tree data={this.state.data} onPathSelectionChange={this.props.onPathSelectionChange} /> </div>);
   }
 }
+
+TrackTreeContainer.propTypes = {
+  onPathSelectionChange : PropTypes.func.isRequired
+};
+
 export default TrackTreeContainer;

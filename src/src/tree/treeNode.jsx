@@ -11,25 +11,27 @@ import { VelocityComponent, VelocityTransitionGroup } from 'velocity-react';
     paths: path so far from device, e.g. pc:/c:/music/dnb
 */
 
-const iconStyle = { display: "inline", marginLeft: '4px' };
-const DeleteIcon = () => (<div onClick={() => { console.log("delete"); }} style={iconStyle} ><i className="fa fa-times-rectangle" /></div>);
-const FilterIcon = () => (<div onClick={() => { console.log("filter"); }} style={iconStyle}><i className="fa fa-filter" /></div>);
+const iconStyle = { display: "inline", marginLeft: '4px', cursor: 'pointer' };
+const textLabelStyle = { display: "inline", marginLeft: '4px'};
+const DeleteIcon = (node) => (<div onClick={() => { console.log("delete", node); }} style={iconStyle} ><i className="fa fa-times-rectangle" /></div>);
+const FilterIcon = (node) => (<div onClick={() => { console.log("filter"); }} style={iconStyle}><i className="fa fa-filter" /></div>);
+
 const DeselectChildrenIcon = () => (<div onClick={() => { console.log("folder"); }} style={iconStyle}><i className="fa fa-folder" /></div>);
-const SelectIcon = () => (<div style={iconStyle}><input id="checkBox" type="checkbox" /></div>);
+const SelectIcon = (node,onPathSelectionChange) => (<div onClick={() => { console.log("select", node); onPathSelectionChange(node); }} style={iconStyle}><i className="fa fa-folder" /></div>); //<input id="checkBox" type="checkbox" />
 const AddNewPlaylistIcon = () => (<div onClick={() => { console.log("addNewPlaylistIcon"); }} style={iconStyle}><i className="fa fa-plus" /></div>);
 
-const PlaylistLabel = node => (
+const PlaylistLabel = (node,onPathSelectionChange) => (
   <div>
-    <SelectIcon />
+    {SelectIcon(node,onPathSelectionChange)}
     <EditText text={node.name} color={node.color || "white"} />
     <div style={{ display: "inline", marginLeft: '4px', float: 'right' }}>
       <FilterIcon />
-      <DeleteIcon />
+      {DeleteIcon(node)}
     </div>
   </div>
 );
 
-const TrackLabel = (node) => {
+const TrackLabel = (node, onPathSelectionChange) => {
   const rootNode = node.path === undefined || node.path.indexOf('/', 0) === -1;
   const isAddNewPlaylist = node.isAddNewPlaylist === true;
   if (isAddNewPlaylist) {
@@ -42,8 +44,8 @@ const TrackLabel = (node) => {
   return rootNode ?
     ( // root
       <div style={{ display: "inline" }}>
-        <SelectIcon />
-        <div style={iconStyle}>
+        {SelectIcon(node,onPathSelectionChange)}
+        <div style={textLabelStyle}>
           {node.name}
         </div>
       </div>
@@ -51,8 +53,8 @@ const TrackLabel = (node) => {
     :
     ( // track folder
       <div style={{ display: "inline" }}>
-        <SelectIcon />
-        <div style={iconStyle}>
+        {SelectIcon(node,onPathSelectionChange)}
+        <div style={textLabelStyle}>
           {node.name}
         </div>
         <div style={{ display: "inline", marginLeft: '4px', float: 'right' }}>
@@ -83,6 +85,7 @@ class TreeNode extends Component {
     const children
       = this.props.data.children.map(c =>
         (<TreeNode
+          onPathSelectionChange = {this.props.onPathSelectionChange}
           data={c}
           hidden={!this.state.open}
           depth={this.props.depth + 1}
@@ -101,11 +104,15 @@ class TreeNode extends Component {
     const ToggleIconText = this.state.open ? "▼" : "►";
     const hiddenStyle = (this.props.hidden) ? { display: "none", textAlign: "left" } : { textAlign: "left" };
     return (
-
       <div style={hiddenStyle}>
         <div style={{ display: "inline", float: "left", color: 'rgba(0,0,0,0)' }}>{leftPad}</div>
-        {this.props.data.children ? <div onClick={this.onClick} style={{ display: "inline", cursor: 'pointer' }}>{ToggleIconText}</div> : "" }
-        <div style={{ display: "inline" }}>{ (this.props.data.playlistId === undefined) ? TrackLabel(this.props.data) : PlaylistLabel(this.props.data) }</div>
+        {this.props.data.children
+          ? <div onClick={this.onClick} style={{ display: "inline", cursor: 'pointer' }}>{ToggleIconText}</div>
+          : "" }
+        <div style={{ display: "inline" }}>{
+          (this.props.data.playlistId === undefined)
+          ? TrackLabel(this.props.data, this.props.onPathSelectionChange)
+          : PlaylistLabel(this.props.data, this.props.onPathSelectionChange) }</div>
         {this.props.data.children ? this.renderChildren() : ""}
       </div>
     );
@@ -123,6 +130,7 @@ TreeNode.propTypes = {
   hidden: PropTypes.bool.isRequired,
   depth: PropTypes.number,
   openByDefault: PropTypes.bool,
+  onPathSelectionChange : PropTypes.func.isRequired
 };
 
 export default TreeNode;

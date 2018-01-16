@@ -31,6 +31,7 @@ class TrackContainer extends Component {
       youtubeId: "",
       trackViewIndex: 0,
       sortedData: [],
+      selectionData: {path:""}
     };
   }
 
@@ -38,10 +39,14 @@ class TrackContainer extends Component {
     this.setYoutubeId = this.setYoutubeId.bind(this);
     this.onNextTrackRequested = this.onNextTrackRequested.bind(this);
     this.findAndPlayTrack = this.findAndPlayTrack.bind(this);
+    this.onPathSelectionChange = this.onPathSelectionChange.bind(this);
 
     try {
       const tracks = await fetch('/tracks', { method: "GET", credentials: 'include' });
       const tracksFromJSON = await tracks.json();
+      tracksFromJSON.forEach((t)=>{
+        t.paths = t.paths.replace(/\\/g, "/");
+      });
       this.setState({ tracks: tracksFromJSON, youtubeId: "-1" });
     } catch (e) {
       console.log("Couldn't load tracks", e);
@@ -52,6 +57,10 @@ class TrackContainer extends Component {
     console.log("shouldComponentUpdate", nextProps);
     if (nextState.youtubeId !== this.state.youtubeId) {
       console.log(`checking shouldComponentUpdate: yes, dif ytid, ${this.state.youtubeId} to ${nextState.youtubeId}`);
+      return true;
+    }
+    console.log(nextState.selectionData, this.state.selectionData);
+    if(nextState.selectionData.path !== this.state.selectionData.path){
       return true;
     }
     if (nextState.youtubeId === null) {
@@ -168,6 +177,16 @@ class TrackContainer extends Component {
     return false;
   }
 
+  onPathSelectionChange(selectionData){
+    //console.log("onPathSelectionChange", selectionData);
+    let op = selectionData.path;
+    let s = op.substr(op.indexOf(")")+1, op.length - op.indexOf(")")+1);
+    s=  s.trim();
+    selectionData.path = s;
+    //console.log(s);
+    this.setState({selectionData : selectionData});
+  }
+
   render() {
     return (
       <div>
@@ -177,8 +196,9 @@ class TrackContainer extends Component {
           nextTrackCallback={this.onNextTrackRequested}
         />
         <div style={{ display: "flex", justifyContent: "center" }}>
-          <TrackTreeContainer />
+          <TrackTreeContainer onPathSelectionChange={this.onPathSelectionChange} />
           <TrackTable
+            selectionData={this.state.selectionData}
             data={this.state.tracks}
             youtubeId={this.state.youtubeId}
             setYoutubeIdCallback={this.setYoutubeId}
