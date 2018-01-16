@@ -70,6 +70,11 @@ class TreeNode extends Component {
     this.onClick = this.onClick.bind(this);
     this.state = { open: false };
   }
+
+  componentWillMount() {
+    this.setState({ open: this.props.openByDefault });
+  }
+
   onClick() {
     this.setState({ open: !this.state.open });
   }
@@ -109,6 +114,7 @@ class TreeNode extends Component {
 
 TreeNode.defaultProps = {
   depth: 0,
+  openByDefault: false,
 };
 
 // this.props.data.name
@@ -116,6 +122,7 @@ TreeNode.propTypes = {
   data: PropTypes.object.isRequired,
   hidden: PropTypes.bool.isRequired,
   depth: PropTypes.number,
+  openByDefault: PropTypes.bool,
 };
 
 export default TreeNode;

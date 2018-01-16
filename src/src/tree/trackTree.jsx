@@ -30,7 +30,7 @@ class TrackTree extends Component {
   render() {
     return (
       <div style={{ minWidth: '200px' }} >
-        <TreeNode data ={this.props.data} hidden={false} />
+        <TreeNode data ={this.props.data} hidden={false} openByDefault />
       </div>
 
     );

@@ -34,7 +34,7 @@ class TrackContainer extends Component {
     };
   }
 
-  async componentWillMount() {
+  async componentDidMount() {
     this.setYoutubeId = this.setYoutubeId.bind(this);
     this.onNextTrackRequested = this.onNextTrackRequested.bind(this);
     this.findAndPlayTrack = this.findAndPlayTrack.bind(this);

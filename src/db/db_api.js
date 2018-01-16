@@ -86,4 +86,5 @@ module.exports = {
     getServerStatus,
     getTracks: TrackController.getTracks,
     getYoutubeIdForHash: YoutubeController.getYoutubeIdForHash,
+    getUniquePaths: TrackController.getUniquePaths,
 };

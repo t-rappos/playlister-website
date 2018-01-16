@@ -13,6 +13,16 @@ async function checkUserOwnsDevice(userId, deviceId) {
     }
 }
 
+async function getUniquePaths(userId) {
+    const query = `SELECT DISTINCT devices.id as "did", path FROM device_tracks AS "path"
+    INNER JOIN devices ON devices.id = "deviceId"
+    INNER JOIN users ON devices."userId" = users.id
+    WHERE users.id = '${userId}' 
+    AND devices.associated = true
+    `;
+    return db.sequelize.query(query);
+}
+
 async function getTracks(userId) {
     const query = `
     SELECT 
@@ -202,4 +212,5 @@ module.exports = {
     addTracksToDevice,
     removeTracksFromDevice,
     getTracks,
+    getUniquePaths,
 };

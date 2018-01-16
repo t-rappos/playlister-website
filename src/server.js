@@ -173,6 +173,20 @@ app.get('/youtubeId/:hash', isLoggedIn, async (req, res) => {
 });
 
 app.get(
+    '/paths',
+    isLoggedIn,
+    async (req, res) => {
+        try {
+            const paths = await dbApi.getUniquePaths(req.user.id);
+            res.json(paths ? paths[0] : []);
+        } catch (e) {
+            console.log(e.name);
+            res.send(404, "Couldn't get paths");
+        }
+    },
+);
+
+app.get(
     '/tracks',
     isLoggedIn,
     (req, res) => {
@@ -207,7 +221,7 @@ app.get('/users', (req, res) => {
 app.get('/logout', (req, res) => {
     req.logout();
     res.redirect('/');
-    console.log(`destroyed session for ${  req.user}`);
+    console.log(`destroyed session for ${req.user}`);
     /*
     console.log("destroying session for " + req.user);
     req.session.destroy(() => {
