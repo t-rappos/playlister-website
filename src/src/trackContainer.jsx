@@ -30,6 +30,7 @@ class TrackContainer extends Component {
     super();
     this.state = {
       tracks: [],
+      playlists: [],
       youtubeId: "",
       trackViewIndex: 0,
       //sortedData: [],
@@ -45,20 +46,32 @@ class TrackContainer extends Component {
     this.onSelection = this.onSelection.bind(this); //a file is selected in list view
     this.onDropDownSelect = this.onDropDownSelect.bind(this);
 
+    let playlists = [];
+    let tracks = [];
+
+    try{
+      const playlistsf = await fetch('/playlists', { method: "GET", credentials: 'include' });
+      playlists = await playlistsf.json();
+      playlists = playlists.filter((p)=>{return !!p.name;});
+      console.log(playlists);
+    } catch (e) {
+      console.log("Couldn't load playlists", e);
+    }
+
     try {
-      const tracks = await fetch('/tracks', { method: "GET", credentials: 'include' });
-      let tracksFromJSON = await tracks.json();
-      tracksFromJSON.forEach((t, index)=>{
+      const tracksf = await fetch('/tracks', { method: "GET", credentials: 'include' });
+      tracks = await tracksf.json();
+      tracks.forEach((t, index)=>{
         t.paths = t.paths.replace(/\\/g, "/");
         t.dataIndex = index;
         t.selected = false;
       });
-      //tracksFromJSON = tracksFromJSON.slice(0,100);
 
-      this.setState({ tracks: tracksFromJSON, youtubeId: "-1" });
+      
     } catch (e) {
       console.log("Couldn't load tracks", e);
     }
+    this.setState({ tracks: tracks, playlists: playlists, youtubeId: "-1" });
   }
 
 //  shouldComponentUpdate(nextProps, nextState) {
@@ -91,8 +104,36 @@ class TrackContainer extends Component {
     this.setState({tracks: ns},()=>{console.log("set new state");});
   }
 
-  onDropDownSelect(tagId, dataIndex) {
-    console.log("tagId", tagId, "dataIndex", dataIndex, "selected Tracks", getSelectedTracks(this.state.tracks));
+  async onDropDownSelect(tagId, dataIndex) {
+    console.log(this.state, dataIndex);
+    const selectedTracks = getSelectedTracks(this.state.tracks);
+    if(selectedTracks.length === 0){
+      console.log("this.state.tracks[dataIndex].id", this.state.tracks[dataIndex].id);
+      const result = await fetch('/toggleplaylisttracks', {
+        method: "POST", 
+        headers: {'Content-Type': 'application/json'}, 
+        credentials: 'include',
+        body: JSON.stringify({
+          trackIds: [this.state.tracks[dataIndex].id],
+          playlistId: tagId,
+        }),
+      },
+      );
+      console.log(result);
+    } else if(selectedTracks.length > 0){
+      console.log("tagId", tagId, "dataIndex", dataIndex, "selected Tracks", selectedTracks);
+      const result = await fetch('/toggleplaylisttracks', {
+        method: "POST", 
+        headers: {'Content-Type': 'application/json'}, 
+        credentials: 'include',
+        body: JSON.stringify({
+          trackIds: selectedTracks.map(t=>t.id),
+          playlistId: tagId,
+        }),
+      },
+      );
+      console.log(result);
+    }
   }
 
   async onNextTrackRequested() {
@@ -223,6 +264,7 @@ class TrackContainer extends Component {
         <div style={{ display: "flex", justifyContent: "center" }}>
           <TrackTreeContainer onPathSelectionChange={this.onPathSelectionChange} />
           <TrackTable
+            playlistData={this.state.playlists}
             selectionData={this.state.selectionData}
             data={this.state.tracks}
             youtubeId={this.state.youtubeId}

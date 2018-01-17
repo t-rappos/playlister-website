@@ -92,7 +92,7 @@ return [
         Cell: row => (<RowTagsDropDown onSelection={(tagId)=>{
           console.log(tagId, " was clicked");
           _this.props.onDropDownSelect(tagId, row.original.dataIndex);
-        }} tagNames={['liquid', 'neuro']} tagIds={[0, 1]} tagSelectedArray={[false, true]} />),
+        }} tagNames={_this.props.playlistData.map(p=>p.name)} tagIds={_this.props.playlistData.map(p=>p.id)} tagSelectedArray={[false, true]} />),
       },
       {
         Header: "Youtube Id",
@@ -186,10 +186,12 @@ return [
   
 TrackTable.defaultProps = {
   youtubeId: "-1",
-  selectionData: []
+  selectionData: [],
+  playlistData: []
 };
 TrackTable.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object).isRequired,
+  playlistData: PropTypes.arrayOf(PropTypes.object),
   youtubeId: PropTypes.string,
   onSelection: PropTypes.func.isRequired,
   onDropDownSelect: PropTypes.func.isRequired,

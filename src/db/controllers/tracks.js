@@ -26,6 +26,7 @@ async function getUniquePaths(userId) {
 async function getTracks(userId) {
     const query = `
     SELECT 
+        tracks.id,
         tracks.album,
         tracks.artist,
         tracks.title,

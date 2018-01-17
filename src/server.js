@@ -71,7 +71,7 @@ async function handleDbError(fn){
     }
 }
 
-app.post('/playlist', passport.authenticate('basic', { session: false }), async (req,res)=>{
+app.post('/playlist', isLoggedIn, async (req,res)=>{
     const {name, color, icon} = req.body; 
     console.log("req.body", req.body);
     const result = await dbApi.addPlaylist(req.user.id, name, color, icon);
@@ -79,13 +79,13 @@ app.post('/playlist', passport.authenticate('basic', { session: false }), async 
     res.send(200, 'Ok');
 });
 
-app.post('/removeplaylist', passport.authenticate('basic', { session: false }), async (req,res)=>{
+app.post('/removeplaylist', isLoggedIn, async (req,res)=>{
     const result = await dbApi.removePlaylist(req.body.id);
     console.log(result);
     res.send(200, 'Ok');
 });
 
-app.post('/playlisttracks', passport.authenticate('basic', { session: false }), async (req,res)=>{ 
+app.post('/playlisttracks', isLoggedIn, async (req,res)=>{ 
     const result = await dbApi.addTracksToPlaylist(req.body.trackIds, req.body.playlistId);
     console.log(result);
     res.send(200, 'Ok');
@@ -93,26 +93,31 @@ app.post('/playlisttracks', passport.authenticate('basic', { session: false }), 
 
 
 //TODO: find a nice way to return 404 if a sql error occurs in these methods.
-app.post('/removeplaylisttracks', passport.authenticate('basic', { session: false }), async (req,res)=>{
+app.post('/removeplaylisttracks', isLoggedIn, async (req,res)=>{
         const result = await dbApi.removeTracksFromPlaylist(req.body.trackIds, req.body.playlistId);
         console.log(result);
         res.send(200, 'Ok');
 });
 
-app.post('/toggleplaylisttracks', passport.authenticate('basic', { session: false }), async (req,res)=>{
-    const result = await dbApi.togglePlaylistForTracks(req.body.trackIds, req.body.playlistId);
+app.post('/toggleplaylisttracks', isLoggedIn, async (req,res)=>{
+    console.log("toggleplaylisttracks", req.body);
+    const {trackIds, playlistId} = req.body;
+    if(!trackIds || trackIds.length===0){console.error("no tracks sent"); res.send(404, 'error');}
+    if(!playlistId ){console.error("no playlist sent"); res.send(404, 'error');}
+
+    const result = await dbApi.togglePlaylistForTracks(trackIds, playlistId);
     console.log(result);
     res.send(200, 'Ok');
 });
 
-app.get('/playlists', passport.authenticate('basic', { session: false }), async (req,res)=>{
+app.get('/playlists', isLoggedIn, async (req,res)=>{
     const result = await dbApi.getPlaylistsForUser(req.user.id);
     console.log(result);
     res.json(result);
     //res.send(200, 'Ok');
 });
 
-app.get('/playlisttracks/:playlistId', passport.authenticate('basic', { session: false }), async (req,res)=>{
+app.get('/playlisttracks/:playlistId', isLoggedIn, async (req,res)=>{
     const result = await dbApi.getPlaylistTrackIds(req.params.playlistId)
     console.log(result);
     res.json(result);
