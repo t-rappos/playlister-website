@@ -16,20 +16,32 @@ import RowSelectCheckbox from './row/rowSelectCheckbox';
 import RowTags from './row/rowTags';
 import RowTagsDropDown from './row/rowTagsDropDown';
 
-const columns = [
+function makeColumns(_this){
+return [
   {
     Header: "My Tracks",
     columns: [
+      
       {
         Header: "Play",
         id: 'playButton',
         Cell: row => (<RowPlayButton />),
       },
+      
+      {
+        Header: "DataIndex",
+        id: "dataIndex",
+        accessor: d => d.dataIndex
+      },
       {
         Header: "Selection",
         id: 'selection',
-        Cell: row => (<RowSelectCheckbox />),
+        accessor: d => d.selected,
+        Cell: row => (<RowSelectCheckbox id={row.original.hash} checked={row.original.selected} onChecked={(val)=>{
+          _this.props.onSelection(row.original.dataIndex, val);
+        }}/>),
       },
+      
       {
         Header: "Title",
         id: "title",
@@ -77,7 +89,10 @@ const columns = [
       {
         Header: "Toggle Playlist/Tag for selection",
         id: 'tagsDropDown',
-        Cell: row => (<RowTagsDropDown tagNames={['liquid', 'neuro']} tagIds={[0, 1]} tagSelectedArray={[false, true]} />),
+        Cell: row => (<RowTagsDropDown onSelection={(tagId)=>{
+          console.log(tagId, " was clicked");
+          _this.props.onDropDownSelect(tagId, row.original.dataIndex);
+        }} tagNames={['liquid', 'neuro']} tagIds={[0, 1]} tagSelectedArray={[false, true]} />),
       },
       {
         Header: "Youtube Id",
@@ -90,10 +105,33 @@ const columns = [
         id: "hash",
         accessor: d => d.hash
       },
+      
     ],
   },
 ];
+}
 
+/* 
+      getTdProps={(state, rowInfo ) => ({ // , column, instance 
+        onClick: (e, handleOriginal) => {
+          // state.resolvedData[viewIndex+1]._index
+          const viewIndex = rowInfo.viewIndex + (rowInfo.pageSize * rowInfo.page);
+          this.props.setYoutubeIdCallback(
+            rowInfo.row.YoutubeId,
+            rowInfo.row.hash,
+            viewIndex, // index in sorted array for clicked track
+            state.resolvedData,
+            rowInfo.row.title,
+            rowInfo.row.trackalbum,
+            rowInfo.row.artist,
+          );
+      
+          if (handleOriginal) {
+            handleOriginal();
+          }
+        },
+      })}
+*/
 
   //filtered = {props.selectionData === [] || !props.selectionData || !props.selectionData.path ? 0 : [{ // the current filters model
   //   id: 'paths',
@@ -113,64 +151,26 @@ const columns = [
   }
 
   render(){
-    console.log("props", this.props);
+    console.log("render tracktable");
 
     let RT = (this.props.selectionData === [] || !this.props.selectionData || !this.props.selectionData.path || this.props.selectionData.path === this.state.filterPath) ? (
     <ReactTable
-      getTdProps={(state, rowInfo /* , column, instance */) => ({
-        onClick: (e, handleOriginal) => {
-          // state.resolvedData[viewIndex+1]._index
-          const viewIndex = rowInfo.viewIndex + (rowInfo.pageSize * rowInfo.page);
-          this.props.setYoutubeIdCallback(
-            rowInfo.row.YoutubeId,
-            rowInfo.row.hash,
-            viewIndex, // index in sorted array for clicked track
-            state.resolvedData,
-            rowInfo.row.title,
-            rowInfo.row.trackalbum,
-            rowInfo.row.artist,
-          );
-      
-          if (handleOriginal) {
-            handleOriginal();
-          }
-        },
-      })}
       data={this.props.data}
       filterable
     
       defaultFilterMethod={(filter, row) => {return (row[filter.id] &&
         row[filter.id].indexOf(filter.value)) !== -1}}
-      columns={columns}
+      columns={makeColumns(this)}
       defaultPageSize={10}
       className="-striped -highlight"
     />) :
     (<ReactTable
-      getTdProps={(state, rowInfo /* , column, instance */) => ({
-        onClick: (e, handleOriginal) => {
-          // state.resolvedData[viewIndex+1]._index
-          const viewIndex = rowInfo.viewIndex + (rowInfo.pageSize * rowInfo.page);
-          this.props.setYoutubeIdCallback(
-            rowInfo.row.YoutubeId,
-            rowInfo.row.hash,
-            viewIndex, // index in sorted array for clicked track
-            state.resolvedData,
-            rowInfo.row.title,
-            rowInfo.row.trackalbum,
-            rowInfo.row.artist,
-          );
-      
-          if (handleOriginal) {
-            handleOriginal();
-          }
-        },
-      })}
       data={this.props.data}
       filterable
     
       defaultFilterMethod={(filter, row) => {return (row[filter.id] &&
         row[filter.id].indexOf(filter.value)) !== -1}}
-      columns={columns}
+      columns={makeColumns(this)}
       defaultPageSize={10}
       className="-striped -highlight"
       filtered={[{'id': "paths", 'value': this.props.selectionData.path}]}
@@ -191,6 +191,8 @@ TrackTable.defaultProps = {
 TrackTable.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object).isRequired,
   youtubeId: PropTypes.string,
+  onSelection: PropTypes.func.isRequired,
+  onDropDownSelect: PropTypes.func.isRequired,
   setYoutubeIdCallback: PropTypes.func.isRequired,
   selectionData: PropTypes.object
 };

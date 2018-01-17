@@ -5,10 +5,12 @@ import TrackTable from './trackTable';
 import TrackYoutubeDisplay from './trackYoutubeDisplay';
 import TrackTreeContainer from './tree/trackTreeContainer';
 
-
 const NULL_SEARCH_TERM = '2Vv-BfVoq4g'; // TODO: update this automatically?
 
-console.log(fetch);
+
+function getSelectedTracks(tracks){
+  return tracks.filter((t)=>{return t.selected === true;});
+}
 
 function checkNextTrackValid(youtubeId, ptitle, palbum, partist) {
   if (!!youtubeId && youtubeId === NULL_SEARCH_TERM) { console.log("checkNextTrackValid: null search term"); return false; }
@@ -30,8 +32,8 @@ class TrackContainer extends Component {
       tracks: [],
       youtubeId: "",
       trackViewIndex: 0,
-      sortedData: [],
-      selectionData: {path:""}
+      //sortedData: [],
+      selectionData: {path:""} //a folder is selected in tree view
     };
   }
 
@@ -39,21 +41,28 @@ class TrackContainer extends Component {
     this.setYoutubeId = this.setYoutubeId.bind(this);
     this.onNextTrackRequested = this.onNextTrackRequested.bind(this);
     this.findAndPlayTrack = this.findAndPlayTrack.bind(this);
-    this.onPathSelectionChange = this.onPathSelectionChange.bind(this);
+    this.onPathSelectionChange = this.onPathSelectionChange.bind(this); //a folder is selected in tree view
+    this.onSelection = this.onSelection.bind(this); //a file is selected in list view
+    this.onDropDownSelect = this.onDropDownSelect.bind(this);
 
     try {
       const tracks = await fetch('/tracks', { method: "GET", credentials: 'include' });
-      const tracksFromJSON = await tracks.json();
-      tracksFromJSON.forEach((t)=>{
+      let tracksFromJSON = await tracks.json();
+      tracksFromJSON.forEach((t, index)=>{
         t.paths = t.paths.replace(/\\/g, "/");
+        t.dataIndex = index;
+        t.selected = false;
       });
+      //tracksFromJSON = tracksFromJSON.slice(0,100);
+
       this.setState({ tracks: tracksFromJSON, youtubeId: "-1" });
     } catch (e) {
       console.log("Couldn't load tracks", e);
     }
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
+//  shouldComponentUpdate(nextProps, nextState) {
+    /*
     console.log("shouldComponentUpdate", nextProps);
     if (nextState.youtubeId !== this.state.youtubeId) {
       console.log(`checking shouldComponentUpdate: yes, dif ytid, ${this.state.youtubeId} to ${nextState.youtubeId}`);
@@ -72,6 +81,18 @@ class TrackContainer extends Component {
     // }
     console.log("checking shouldComponentUpdate: no");
     return false;
+    */
+ // }
+
+  onSelection(index, value) {
+    console.log(index, value);
+    let ns = this.state.tracks;
+    ns[index].selected = value;
+    this.setState({tracks: ns},()=>{console.log("set new state");});
+  }
+
+  onDropDownSelect(tagId, dataIndex) {
+    console.log("tagId", tagId, "dataIndex", dataIndex, "selected Tracks", getSelectedTracks(this.state.tracks));
   }
 
   async onNextTrackRequested() {
@@ -121,13 +142,16 @@ class TrackContainer extends Component {
   }
 
 
+  //ALL OF THIS DATA CAN BE ACCESSED VIA OUR INTERNAL DATA ARRAY!!
   async setYoutubeId(ytid, hash, trackViewIndex, sortedData, title, album, artist) {
     // if(title){title = title.trim();}
     // if(album){album = album.trim();}
     // if(artist){artist = artist.trim();}
 
+    
     console.log("ytid, hash, clickedTrackViewIndex, title, album, artist", ytid, hash, trackViewIndex, title, album, artist);
 
+    /*
 
     // let ng1 = !title && !album && !artist;
     // let ng2 = !album && !title;
@@ -155,6 +179,7 @@ class TrackContainer extends Component {
       await this.setState({ youtubeId: ytid, trackViewIndex, sortedData });
       console.log("setYoutubeId : g");
     }
+    */
   }
 
   async findAndPlayTrack(hash) {
@@ -202,6 +227,8 @@ class TrackContainer extends Component {
             data={this.state.tracks}
             youtubeId={this.state.youtubeId}
             setYoutubeIdCallback={this.setYoutubeId}
+            onSelection = {this.onSelection}
+            onDropDownSelect = {this.onDropDownSelect}
             style={{ margin: "auto" }}
           />
         </div>
