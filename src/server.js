@@ -54,7 +54,6 @@ function isLoggedIn(req, res, next) {
 // TODO: is this used?
 // can we replace a call to this with one that does
 // something functional as well as authenticate
-
 app.get(
     '/api/me',
     passport.authenticate('basic', { session: false }),
@@ -62,6 +61,63 @@ app.get(
         res.json(req.user);
     },
 );
+
+async function handleDbError(fn){
+    try{
+        await fn();
+    } catch (e) {
+        console.error(e);
+        res.send(404, 'Oops something went');
+    }
+}
+
+app.post('/playlist', passport.authenticate('basic', { session: false }), async (req,res)=>{
+    const {name, color, icon} = req.body; 
+    console.log("req.body", req.body);
+    const result = await dbApi.addPlaylist(req.user.id, name, color, icon);
+    console.log(result);
+    res.send(200, 'Ok');
+});
+
+app.post('/removeplaylist', passport.authenticate('basic', { session: false }), async (req,res)=>{
+    const result = await dbApi.removePlaylist(req.body.id);
+    console.log(result);
+    res.send(200, 'Ok');
+});
+
+app.post('/playlisttracks', passport.authenticate('basic', { session: false }), async (req,res)=>{ 
+    const result = await dbApi.addTracksToPlaylist(req.body.trackIds, req.body.playlistId);
+    console.log(result);
+    res.send(200, 'Ok');
+});
+
+
+//TODO: find a nice way to return 404 if a sql error occurs in these methods.
+app.post('/removeplaylisttracks', passport.authenticate('basic', { session: false }), async (req,res)=>{
+        const result = await dbApi.removeTracksFromPlaylist(req.body.trackIds, req.body.playlistId);
+        console.log(result);
+        res.send(200, 'Ok');
+});
+
+app.post('/toggleplaylisttracks', passport.authenticate('basic', { session: false }), async (req,res)=>{
+    const result = await dbApi.togglePlaylistForTracks(req.body.trackIds, req.body.playlistId);
+    console.log(result);
+    res.send(200, 'Ok');
+});
+
+app.get('/playlists', passport.authenticate('basic', { session: false }), async (req,res)=>{
+    const result = await dbApi.getPlaylistsForUser(req.user.id);
+    console.log(result);
+    res.json(result);
+    //res.send(200, 'Ok');
+});
+
+app.get('/playlisttracks/:playlistId', passport.authenticate('basic', { session: false }), async (req,res)=>{
+    const result = await dbApi.getPlaylistTrackIds(req.params.playlistId)
+    console.log(result);
+    res.json(result);
+    //res.send(200, 'Ok');
+});
 
 /* GET register device */
 app.get(

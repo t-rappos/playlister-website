@@ -5,7 +5,9 @@ function buildPlaylistTable(sequelize, User, forceNew){
   return new Promise((res,rej)=>{
     let Playlist = sequelize.define('playlist', {
       id: { type: Sequelize.INTEGER, autoIncrement : true, primaryKey: true},
-      name: {type: Sequelize.STRING(30)}
+      name: {type: Sequelize.STRING(30)},
+      color: {type: Sequelize.STRING(30)},
+      icon: {type: Sequelize.STRING(30)},
     });
     Playlist.belongsTo(User,{foreignKey:'userId', foreignKeyConstraint:true})
     // force: true will drop the table if it already exists

@@ -192,6 +192,8 @@ async function addTracksToDevice(userId, deviceId, trackData) {
     console.log("finished addTracks");
 }
 
+//TODO: should we be checking arguments here? wouldnt that happen in server.js.
+//CHECK ASSUMPTION: There should be no validation funcitonality in this file.
 async function removeTracksFromDevice(userId, deviceId, trackData) {
     // remove from device_tracks where deviceId = deviceId, path in paths, filename in filenames
     if (!(userId && deviceId && trackData)) {
@@ -208,9 +210,66 @@ async function removeTracksFromDevice(userId, deviceId, trackData) {
     console.log(`destroyed ${affectedRows} device tracks`);
 }
 
+//returns playlist id
+function addPlaylist(userId, name, color, icon) {
+    console.log(userId, name, color, icon);
+    return db.Playlist.create({
+        userId,
+        name,
+        color,
+        icon,
+    });
+}
+
+async function removePlaylist(id){
+    await db.PlaylistTrack.destroy({where:{playlistId: id}});
+    return db.Playlist.destroy({ where: { id: id} });
+}
+
+function addTracksToPlaylist(trackIds, playlistId) {
+    let d = trackIds.map((tid)=>{return {playlistId : playlistId, trackId : tid}});
+    return db.PlaylistTrack.bulkCreate(d);
+}
+
+async function removeTracksFromPlaylist(trackIds, playlistId) {
+    return db.PlaylistTrack.destroy({where: { trackId: trackIds, playlistId: playlistId}});
+}
+
+async function togglePlaylistForTracks(trackIds, playlistId) {
+    //get all playlist tracks in trackIds => to remove
+    //find the rest of the ids => to add.
+    const toRemovePTS 
+        = await db.PlaylistTrack.findAll({where:{trackId: trackIds, playlistId: playlistId}});
+    const toRemove = toRemovePTS.map((t)=>{return t.trackId});
+    console.log("removing: ", toRemove);
+    const toAdd = trackIds.filter((t)=>{return toRemove.indexOf(t)===-1;});//return toRemovePTS.find((pt)=>{return pt.trackId === t});});
+    console.log("keeping: ", toAdd);
+    const destroyResults = await db.PlaylistTrack.destroy({where:{playlistId: playlistId, trackId: toRemove}});
+    console.log("destroyResults", destroyResults);
+    const bulkCreateData = toAdd.map((t)=>{return {trackId: t, playlistId: playlistId};});
+    const addResult = await db.PlaylistTrack.bulkCreate(bulkCreateData);
+    console.log("addResult", addResult);
+}
+
+async function getPlaylistsForUser(userId){
+    return db.Playlist.findAll({where:{userId: userId}});
+}
+
+//returns trackIds
+async function getPlaylistTrackIds(playlistId){
+    return db.PlaylistTrack.findAll({where:{playlistId: playlistId}});
+}
+
 module.exports = {
     addTracksToDevice,
     removeTracksFromDevice,
     getTracks,
     getUniquePaths,
+    addPlaylist, // (userId, name, color, icon)
+    removePlaylist, // (id)
+    addTracksToPlaylist, // (trackIds, playlistId)
+    removeTracksFromPlaylist, // (tracksIds, playlistId)
+    togglePlaylistForTracks, // (trackIds, playlistId)
+    getPlaylistsForUser,
+    getPlaylistTrackIds
 };

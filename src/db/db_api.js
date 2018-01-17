@@ -87,4 +87,12 @@ module.exports = {
     getTracks: TrackController.getTracks,
     getYoutubeIdForHash: YoutubeController.getYoutubeIdForHash,
     getUniquePaths: TrackController.getUniquePaths,
+
+    addPlaylist: TrackController.addPlaylist, // (userId, name, color, icon)
+    removePlaylist: TrackController.removePlaylist, // (id)
+    addTracksToPlaylist: TrackController.addTracksToPlaylist, // (trackIds, playlistId)
+    removeTracksFromPlaylist: TrackController.removeTracksFromPlaylist, // (tracksIds, playlistId)
+    togglePlaylistForTracks: TrackController.togglePlaylistForTracks, // (trackIds, playlistId)
+    getPlaylistsForUser: TrackController.getPlaylistsForUser,
+    getPlaylistTrackIds: TrackController.getPlaylistTrackIds,
 };
