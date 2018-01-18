@@ -89,6 +89,7 @@ module.exports = {
     getUniquePaths: TrackController.getUniquePaths,
 
     addPlaylist: TrackController.addPlaylist, // (userId, name, color, icon)
+    updatePlaylist : TrackController.updatePlaylist,
     removePlaylist: TrackController.removePlaylist, // (id)
     addTracksToPlaylist: TrackController.addTracksToPlaylist, // (trackIds, playlistId)
     removeTracksFromPlaylist: TrackController.removeTracksFromPlaylist, // (tracksIds, playlistId)

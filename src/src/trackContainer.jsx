@@ -53,7 +53,6 @@ class TrackContainer extends Component {
       const playlistsf = await fetch('/playlists', { method: "GET", credentials: 'include' });
       playlists = await playlistsf.json();
       playlists = playlists.filter((p)=>{return !!p.name;});
-      console.log(playlists);
     } catch (e) {
       console.log("Couldn't load playlists", e);
     }
@@ -66,7 +65,6 @@ class TrackContainer extends Component {
         t.dataIndex = index;
         t.selected = false;
       });
-
       
     } catch (e) {
       console.log("Couldn't load tracks", e);
@@ -109,7 +107,7 @@ class TrackContainer extends Component {
     const selectedTracks = getSelectedTracks(this.state.tracks);
     if(selectedTracks.length === 0){
       console.log("this.state.tracks[dataIndex].id", this.state.tracks[dataIndex].id);
-      const result = await fetch('/toggleplaylisttracks', {
+      const result = await fetch('/toggleplaylisttracks', { //TODO: extract post out
         method: "POST", 
         headers: {'Content-Type': 'application/json'}, 
         credentials: 'include',

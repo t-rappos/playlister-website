@@ -6,10 +6,12 @@ import Tree from './trackTree';
 
 // TODO: do we want to send tracks as well?
 // TODO: remember to add symbols with colors...
+/*
 const playlists = [
   { name: 'dnb', id: 1 },
   { name: 'a really long name for a playlist this is!', id: 2 },
 ];
+*/
 
 function trimSlashes(data) {
   let startIndex = 0;
@@ -21,15 +23,13 @@ function trimSlashes(data) {
 
 function convertPlaylistData(data) {
   // take what we want
-  console.log("data", data);
   const dataMap = data.map(d => ({ name: d.name, playlistId: d.id }));
-  console.log("dataMap", dataMap);
-  dataMap.push({ name: '+', isAddNewPlaylist: true });
+  dataMap.push({ name: 'add new playlist',  playlistId: -1 }); //isAddNewPlaylist: true
   const result = { name: 'playlists', children: dataMap };
   return result;
 }
 
-
+/*
 const filepathsRaw = [
   "pc:/c:/music/dnb",
   "pc:/c:/music/garage",
@@ -47,6 +47,7 @@ const filepathsRaw2 = [
   "xmobile:/SD:/xmusic/running",
   "xmobile:/SD:/xmusic/electronic",
 ];
+*/
 
 function convertRawFilepaths(pdata, depth) {
 
@@ -96,10 +97,42 @@ function fillTreeWithData(data, pathSoFar) {
   }
 }
 
+async function post(endpoint, body){
+  return await fetch(endpoint, {
+    method: "POST", 
+    headers: {'Content-Type': 'application/json'}, 
+    credentials: 'include',
+    body: JSON.stringify(body),
+  });
+}
+
 class TrackTreeContainer extends Component {
   constructor(props) {
     super(props);
     this.state = { filePathData: []};
+    this.onPlaylistUpdated = this.onPlaylistUpdated.bind(this);
+    this.onPlaylistDeleted = this.onPlaylistDeleted.bind(this);
+  }
+
+  async onPlaylistDeleted(playlist){
+    console.log("on playlist deleted", playlist);
+    let res = await post('/removeplaylist', playlist);
+    console.log(res);
+  }
+
+  async onPlaylistUpdated(playlist){
+    console.log("on playlist updated", playlist);
+    if (playlist.color === ""){playlist.color = null;}
+    if (playlist.name === ""){playlist.name = null;}
+    playlist.icon = null; //TODO: consolidate icon, or make it so we only display icon if it isn't ""
+    
+    if(playlist.id >= 0){ //we need to update
+      let res = await post("/updateplaylist", playlist);
+      console.log(res);
+    } else { //we need to create a new playlist
+      let res = await post("/playlist", playlist);
+      console.log(res);
+    }
   }
 
   async componentDidMount() {
@@ -119,7 +152,11 @@ class TrackTreeContainer extends Component {
     const p = convertPlaylistData(this.props.playlistData);
     const data = { name: 'tracks', children: [...this.state.filePathData, p] };
 
-    return (<div> <Tree data={data} onPathSelectionChange={this.props.onPathSelectionChange} /> </div>);
+    return (<div> <Tree 
+      data={data} 
+      onPlaylistDeleted = {this.onPlaylistDeleted }
+      onPathSelectionChange={this.props.onPathSelectionChange} 
+      onPlaylistUpdated={this.onPlaylistUpdated} /> </div>);
   }
 }
 

@@ -42,6 +42,9 @@ class EditText extends Component {
     if (e) { e.preventDefault(); }
     if (this.state.editing) {
       console.log("remember, dont value use if empty string (", this.state.lastEditText, this.state.lastColor, ")");
+      if(this.state.lastEditText !== "" || this.state.lastColor !== ""){
+        this.props.onPlaylistUpdated(this.state.lastEditText, this.state.lastColor);
+      }
     }
     this.setState({ editing: !this.state.editing, lastEditText: "", lastColor: "" });
   }
@@ -104,6 +107,7 @@ class EditText extends Component {
 EditText.propTypes = {
   text: PropTypes.string.isRequired,
   color: PropTypes.string.isRequired,
+  onPlaylistUpdated: PropTypes.func.isRequired,
 };
 
 export default EditText;

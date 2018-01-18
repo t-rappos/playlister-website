@@ -73,10 +73,20 @@ async function handleDbError(fn){
 
 app.post('/playlist', isLoggedIn, async (req,res)=>{
     const {name, color, icon} = req.body; 
-    console.log("req.body", req.body);
     const result = await dbApi.addPlaylist(req.user.id, name, color, icon);
-    console.log(result);
     res.send(200, 'Ok');
+});
+
+app.post('/updateplaylist', isLoggedIn, async (req,res)=>{
+    try{
+        const {id, name, color, icon} = req.body; 
+        const result = await dbApi.updatePlaylist(id, req.user.id, name, color, icon);
+        console.log(result);
+        res.send(200, 'Ok');
+    } catch (e) {
+        console.error(e);
+        res.send(404, 'Error');
+    }
 });
 
 app.post('/removeplaylist', isLoggedIn, async (req,res)=>{
@@ -112,16 +122,12 @@ app.post('/toggleplaylisttracks', isLoggedIn, async (req,res)=>{
 
 app.get('/playlists', isLoggedIn, async (req,res)=>{
     const result = await dbApi.getPlaylistsForUser(req.user.id);
-    console.log(result);
     res.json(result);
-    //res.send(200, 'Ok');
 });
 
 app.get('/playlisttracks/:playlistId', isLoggedIn, async (req,res)=>{
     const result = await dbApi.getPlaylistTrackIds(req.params.playlistId)
-    console.log(result);
     res.json(result);
-    //res.send(200, 'Ok');
 });
 
 /* GET register device */

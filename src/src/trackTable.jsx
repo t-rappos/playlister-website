@@ -34,6 +34,11 @@ return [
         accessor: d => d.dataIndex
       },
       {
+        Header: "PlaylistIds",
+        id: "playlistIds",
+        accessor: d => d.playlistids
+      },
+      {
         Header: "Selection",
         id: 'selection',
         accessor: d => d.selected,
@@ -84,7 +89,26 @@ return [
       {
         Header: "Tags / Playlists",
         id: 'tags',
-        Cell: row => (<RowTags tagNames={['liquid', 'neuro']} tagColors={['rgb(100,160,220)', 'rgb(180,120,120)']}/>),
+        Cell: row => (<RowTags 
+          tagNames= {row.original.playlistids 
+                    ? row.original.playlistids.split(" ")
+                    .map((pid) => {
+                      const playlist = _this.props.playlistData.find((p)=>{
+                         return ""+p.id === pid
+                      }); 
+                      return playlist ? playlist.name : "X"
+                    }) 
+                    : []
+                  }
+          tagColors={row.original.playlistids 
+            ? row.original.playlistids.split(" ")
+              .map((pid) => {
+                const playlist = _this.props.playlistData.find((p)=>{
+                  return ""+p.id === pid
+                  });
+                return playlist ? playlist.color : "X"
+              }) 
+            : []} />),
       },
       {
         Header: "Toggle Playlist/Tag for selection",
@@ -200,61 +224,3 @@ TrackTable.propTypes = {
 };
 
 export default TrackTable;
-
-
-/*
-                  {
-                    Header: "Device Id",
-                    id: "deviceId",
-                    accessor: d => d.devices
-                  },
-                  {
-                    Header: "Title",
-                    id: "title",
-                    accessor: d => d.title
-                  },
-                  {
-                    Header: "Album",
-                    id: "trackalbum",
-                    accessor: d => d.album
-                  },
-                  {
-                    Header: "Artist",
-                    id: "artist",
-                    accessor: d => d.artist
-                  },
-                  {
-                    Header: "Filesize",
-                    id: "filesize",
-                    accessor: d => d.filesize
-                  },
-                  {
-                    Header: "Hash",
-                    id: "hash",
-                    accessor: d => d.hash
-                  },
-
-                  {
-                    Header: "Paths",
-                    id: "paths",
-                    accessor: d => d.paths
-                  },
-                  {
-                    Header: "Filenames",
-                    id: "filenames",
-                    accessor: d => d.filenames
-                  },
-                  {
-                    Header: "youtubeId",
-                    id: "YoutubeId",
-                    accessor: d => d.youtubeId
-                  } */
-/* {
-                  Header: "First Name",
-                  accessor: "firstName"
-                },
-                {
-                  Header: "Last Name",
-                  id: "lastName",
-                  accessor: d => d.lastName
-                } */

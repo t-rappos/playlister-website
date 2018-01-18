@@ -13,20 +13,36 @@ import { VelocityComponent, VelocityTransitionGroup } from 'velocity-react';
 
 const iconStyle = { display: "inline", marginLeft: '4px', cursor: 'pointer' };
 const textLabelStyle = { display: "inline", marginLeft: '4px'};
-const DeleteIcon = (node) => (<div onClick={() => { console.log("delete", node); }} style={iconStyle} ><i className="fa fa-times-rectangle" /></div>);
+
+const DeleteIcon = (node, onPlaylistDeleted) => (
+  <div
+    onClick={() => {
+      if(window.confirm("Are you sure you want to delete playlist " + node.name + " ?")){
+        onPlaylistDeleted({id: node.playlistId});
+      }
+    }} 
+    style={iconStyle}
+  >
+    <i className="fa fa-times-rectangle" />
+  </div>
+);
+
 const FilterIcon = (node) => (<div onClick={() => { console.log("filter"); }} style={iconStyle}><i className="fa fa-filter" /></div>);
 
 const DeselectChildrenIcon = () => (<div onClick={() => { console.log("folder"); }} style={iconStyle}><i className="fa fa-folder" /></div>);
 const SelectIcon = (node,onPathSelectionChange) => (<div onClick={() => { console.log("select", node); onPathSelectionChange(node); }} style={iconStyle}><i className="fa fa-folder" /></div>); //<input id="checkBox" type="checkbox" />
 const AddNewPlaylistIcon = () => (<div onClick={() => { console.log("addNewPlaylistIcon"); }} style={iconStyle}><i className="fa fa-plus" /></div>);
 
-const PlaylistLabel = (node,onPathSelectionChange) => (
+const PlaylistLabel = (node, onPathSelectionChange, onPlaylistUpdated, onPlaylistDeleted) => (
   <div>
     {SelectIcon(node,onPathSelectionChange)}
-    <EditText text={node.name} color={node.color || "white"} />
+    <EditText 
+      text={node.name} 
+      color={node.color || "white"}
+      onPlaylistUpdated = {(name, color)=>{onPlaylistUpdated({name, color, id: node.playlistId});}} />
     <div style={{ display: "inline", marginLeft: '4px', float: 'right' }}>
       <FilterIcon />
-      {DeleteIcon(node)}
+      {DeleteIcon(node, onPlaylistDeleted)}
     </div>
   </div>
 );
@@ -89,6 +105,8 @@ class TreeNode extends Component {
           data={c}
           hidden={!this.state.open}
           depth={this.props.depth + 1}
+          onPlaylistUpdated={this.props.onPlaylistUpdated}
+          onPlaylistDeleted={this.props.onPlaylistDeleted}
         />));
     return (
       <VelocityComponent animation={{ opacity: this.state.open ? 1 : 0 }} duration={200}>
@@ -112,7 +130,10 @@ class TreeNode extends Component {
         <div style={{ display: "inline" }}>{
           (this.props.data.playlistId === undefined)
           ? TrackLabel(this.props.data, this.props.onPathSelectionChange)
-          : PlaylistLabel(this.props.data, this.props.onPathSelectionChange) }</div>
+          : PlaylistLabel(this.props.data,
+                          this.props.onPathSelectionChange,
+                          this.props.onPlaylistUpdated,
+                          this.props.onPlaylistDeleted) }</div>
         {this.props.data.children ? this.renderChildren() : ""}
       </div>
     );
@@ -130,7 +151,9 @@ TreeNode.propTypes = {
   hidden: PropTypes.bool.isRequired,
   depth: PropTypes.number,
   openByDefault: PropTypes.bool,
-  onPathSelectionChange : PropTypes.func.isRequired
+  onPathSelectionChange : PropTypes.func.isRequired,
+  onPlaylistUpdated : PropTypes.func.isRequired,
+  onPlaylistDeleted : PropTypes.func.isRequired,
 };
 
 export default TreeNode;

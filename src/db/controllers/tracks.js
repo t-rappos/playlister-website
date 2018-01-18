@@ -25,32 +25,36 @@ async function getUniquePaths(userId) {
 
 async function getTracks(userId) {
     const query = `
-    SELECT 
-        tracks.id,
-        tracks.album,
-        tracks.artist,
-        tracks.title,
-        tracks.filesize,
-        tracks.hash,
-        foo.paths,
-        foo.devices,
-        foo.filenames,
-        youtube_tracks."youtubeId"
-    FROM (
-        SELECT "trackId", 
-        STRING_AGG(distinct path, ', ') as paths, 
-        STRING_AGG(distinct cast("deviceId" as varchar(5)), ', ') as devices,
-        STRING_AGG(distinct "filename", ', ') as filenames
-        FROM device_tracks
-        INNER JOIN devices ON devices.id = "deviceId"
-        INNER JOIN users ON devices."userId" = users.id
-        WHERE users.id = '${userId}' 
-        AND devices.associated = true
-        GROUP BY "trackId"
-    ) as foo
-    INNER JOIN tracks ON foo."trackId" = tracks.id
-    INNER JOIN youtube_tracks ON tracks."youtubeTrackId" = youtube_tracks.id
-    ;
+    SELECT
+    tracks.id,
+    tracks.album,
+    tracks.artist,
+    tracks.title,
+    tracks.filesize,
+    tracks.hash,
+    foo.paths,
+    foo.devices,
+    foo.filenames,
+    foo.playlistIds,
+    youtube_tracks."youtubeId"
+FROM (
+    SELECT device_tracks."trackId",
+    STRING_AGG(distinct path, ', ') as paths,
+    STRING_AGG(distinct cast("deviceId" as varchar(5)), ', ') as devices,
+    STRING_AGG(distinct "filename", ', ') as filenames,
+    STRING_AGG(distinct cast("playlistId" as varchar(5)), ' ') as playlistIds
+    FROM device_tracks
+    INNER JOIN devices ON devices.id = "deviceId"
+    INNER JOIN users ON devices."userId" = users.id
+    INNER JOIN tracks ON device_tracks."trackId" = tracks.id
+    LEFT JOIN playlist_tracks ON playlist_tracks."trackId" = tracks.id
+    WHERE users.id = '1'
+    AND devices.associated = true
+    GROUP BY device_tracks."trackId"
+) as foo
+INNER JOIN tracks ON foo."trackId" = tracks.id
+INNER JOIN youtube_tracks ON tracks."youtubeTrackId" = youtube_tracks.id
+;
     `;
     /*
         STRING_AGG(distinct "filename", ', ') as filenames,
@@ -211,7 +215,6 @@ async function removeTracksFromDevice(userId, deviceId, trackData) {
     console.log(`destroyed ${affectedRows} device tracks`);
 }
 
-//returns playlist id
 function addPlaylist(userId, name, color, icon) {
     console.log(userId, name, color, icon);
     return db.Playlist.create({
@@ -220,6 +223,15 @@ function addPlaylist(userId, name, color, icon) {
         color,
         icon,
     });
+}
+
+function updatePlaylist(id, userId, name, color, icon) {
+    console.log(id, userId, name, color, icon);
+    let insert = {};
+    if(name){insert['name']= name;}
+    if(color){insert['color']= color;}
+    if(icon){insert['icon']= icon;}
+    return db.Playlist.update(insert, {where:{id}});
 }
 
 async function removePlaylist(id){
@@ -267,6 +279,7 @@ module.exports = {
     getTracks,
     getUniquePaths,
     addPlaylist, // (userId, name, color, icon)
+    updatePlaylist,
     removePlaylist, // (id)
     addTracksToPlaylist, // (trackIds, playlistId)
     removeTracksFromPlaylist, // (tracksIds, playlistId)
