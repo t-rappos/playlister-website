@@ -21,7 +21,9 @@ function trimSlashes(data) {
 
 function convertPlaylistData(data) {
   // take what we want
+  console.log("data", data);
   const dataMap = data.map(d => ({ name: d.name, playlistId: d.id }));
+  console.log("dataMap", dataMap);
   dataMap.push({ name: '+', isAddNewPlaylist: true });
   const result = { name: 'playlists', children: dataMap };
   return result;
@@ -88,66 +90,46 @@ function convertRawFilepaths(pdata, depth) {
 function fillTreeWithData(data, pathSoFar) {
   const sep = (pathSoFar === '') ? "" : "/";
   data.path = pathSoFar + sep + data.name;
-  // console.log(pathSoFar + sep + data.name);
-  // if(data === undefined || data.length === undefined){return null;}
-  // console.log("children", data.children);
-  if (!data || !data.children) { /* console.log("children", data.children); */ return; }
+  if (!data || !data.children) {return; }
   for (let i = 0; i < data.children.length; i += 1) {
-    // result[i].path = pathSoFar + result[i].name;
     fillTreeWithData(data.children[i], pathSoFar + sep + data.name);
   }
 }
 
 class TrackTreeContainer extends Component {
-  constructor() {
-    super();
-
-    const r = convertRawFilepaths(filepathsRaw, 0);
-    r.forEach((x) => { fillTreeWithData(x, ''); });
-    // fillTreeWithData(r[0], '');
-    //console.log(r);
-
-    const p = convertPlaylistData(playlists);
-    const data = { name: 'tracks', children: [...r, p] };
-
-    this.state = { data };
+  constructor(props) {
+    super(props);
+    this.state = { filePathData: []};
   }
 
   async componentDidMount() {
     try {
       const paths = await fetch('/paths', { method: "GET", credentials: 'include' });
       const pathsFromJSON = await paths.json();
-      //console.log(pathsFromJSON);
-      // this.setState({ paths: pathsFromJSON });
       const pathArray = pathsFromJSON.map(n => trimSlashes("(" + n.did +") " + n.path).replace(/\\/g, "/"));
-      // console.log(pathArray);
-
-      // trim off leading or tailing '/'
-
       const r = convertRawFilepaths(pathArray, 0);
-      //console.log(r);
-
       r.forEach((x) => { fillTreeWithData(x, ''); });
-      // fillTreeWithData(r[0], '');
-      // console.log(r);
-
-      const p = convertPlaylistData(playlists);
-      // console.log(r);
-      const data = { name: 'tracks', children: [...r, p] };
-
-      this.setState({ data });
+      this.setState({ filePathData : r});
     } catch (e) {
       console.log("Couldn't load tracks", e);
     }
   }
 
   render() {
-    return (<div> <Tree data={this.state.data} onPathSelectionChange={this.props.onPathSelectionChange} /> </div>);
+    const p = convertPlaylistData(this.props.playlistData);
+    const data = { name: 'tracks', children: [...this.state.filePathData, p] };
+
+    return (<div> <Tree data={data} onPathSelectionChange={this.props.onPathSelectionChange} /> </div>);
   }
 }
 
+TrackTreeContainer.defaultProps = {
+  playlistData : []
+};
+
 TrackTreeContainer.propTypes = {
-  onPathSelectionChange : PropTypes.func.isRequired
+  onPathSelectionChange : PropTypes.func.isRequired,
+  playlistData : PropTypes.arrayOf(PropTypes.object)
 };
 
 export default TrackTreeContainer;

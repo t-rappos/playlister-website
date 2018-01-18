@@ -262,7 +262,9 @@ class TrackContainer extends Component {
           nextTrackCallback={this.onNextTrackRequested}
         />
         <div style={{ display: "flex", justifyContent: "center" }}>
-          <TrackTreeContainer onPathSelectionChange={this.onPathSelectionChange} />
+          <TrackTreeContainer 
+            onPathSelectionChange={this.onPathSelectionChange} 
+            playlistData = {this.state.playlists} />
           <TrackTable
             playlistData={this.state.playlists}
             selectionData={this.state.selectionData}
