@@ -242,12 +242,12 @@ class TrackContainer extends Component {
   }
 
   onPathSelectionChange(selectionData){
-    //console.log("onPathSelectionChange", selectionData);
-    let op = selectionData.path;
-    let s = op.substr(op.indexOf(")")+1, op.length - op.indexOf(")")+1);
-    s=  s.trim();
-    selectionData.path = s;
-    //console.log(s);
+    if(selectionData.path){
+      let op = selectionData.path;
+      let s = op.substr(op.indexOf(")")+1, op.length - op.indexOf(")")+1);
+      s=  s.trim();
+      selectionData.path = s;
+    } 
     this.setState({selectionData : selectionData});
   }
 

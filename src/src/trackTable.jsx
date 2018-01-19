@@ -1,17 +1,11 @@
-
-// table imports
-// import { render } from "react-dom";
-// import { makeData, Logo, Tips } from "./Utils";
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-// Import React Table
 import ReactTable from "react-table";
 import "react-table/react-table.css";
 
 import RowCopies from './row/rowCopies';
 import RowDevices from './row/rowDevices';
 import RowPlayButton from './row/rowPlayButton';
-//i mport RowFilenames from './row/rowFilenames';
 import RowSelectCheckbox from './row/rowSelectCheckbox';
 import RowTags from './row/rowTags';
 import RowTagsDropDown from './row/rowTagsDropDown';
@@ -135,69 +129,45 @@ return [
 ];
 }
 
-/* 
-      getTdProps={(state, rowInfo ) => ({ // , column, instance 
-        onClick: (e, handleOriginal) => {
-          // state.resolvedData[viewIndex+1]._index
-          const viewIndex = rowInfo.viewIndex + (rowInfo.pageSize * rowInfo.page);
-          this.props.setYoutubeIdCallback(
-            rowInfo.row.YoutubeId,
-            rowInfo.row.hash,
-            viewIndex, // index in sorted array for clicked track
-            state.resolvedData,
-            rowInfo.row.title,
-            rowInfo.row.trackalbum,
-            rowInfo.row.artist,
-          );
-      
-          if (handleOriginal) {
-            handleOriginal();
-          }
-        },
-      })}
-*/
-
-  //filtered = {props.selectionData === [] || !props.selectionData || !props.selectionData.path ? 0 : [{ // the current filters model
-  //   id: 'paths',
-  //    value: props.selectionData.path
-  //  }]}
-
-  //filtered={props.selectionData === [] || !props.selectionData || !props.selectionData.path ? [] : [{ // the current filters model
-  //  id: 'paths',
-  //  value: props.selectionData.path
-  //}]}
-  //filter={'id': "paths", 'value': "E:\music\Drum_Bass"}
-
  class TrackTable extends Component {
-  constructor(){
-    super();
-    this.state = {filterPath : ""};
-  }
 
   render(){
     console.log("render tracktable");
 
-    let RT = (this.props.selectionData === [] || !this.props.selectionData || !this.props.selectionData.path || this.props.selectionData.path === this.state.filterPath) ? (
-    <ReactTable
-      data={this.props.data}
-      filterable
-    
-      defaultFilterMethod={(filter, row) => {return (row[filter.id] &&
-        row[filter.id].indexOf(filter.value)) !== -1}}
-      columns={makeColumns(this)}
-      defaultPageSize={10}
-      className="-striped -highlight"
-    />) :
+    const filterValue = this.props.selectionData.path || this.props.selectionData.playlistId || "paths";
+    const filterId = this.props.selectionData.path ? "paths" : 
+                        (this.props.selectionData.playlistId ? "playlistIds" : "");
+    const filter = [{'id': filterId, 'value': ""+filterValue}];
+    console.log('filter',filter)
+
+    let RT = (this.props.selectionData === []
+      || (!this.props.selectionData.path && !this.props.selectionData.playlistId))
+    ?
     (<ReactTable
       data={this.props.data}
       filterable
-    
-      defaultFilterMethod={(filter, row) => {return (row[filter.id] &&
-        row[filter.id].indexOf(filter.value)) !== -1}}
+      defaultFilterMethod={(filter, row) => {
+        let keep = row[filter.id] && row[filter.id].indexOf && 
+          row[filter.id].indexOf(filter.value) !== -1;
+        return keep;
+      }}
+      columns={makeColumns(this)}
+      defaultPageSize={10}
+      className="-highlight"
+    />)
+    :
+    (<ReactTable
+      data={this.props.data}
+      filterable
+      defaultFilterMethod={(filter, row) => {
+        let keep = row[filter.id] && row[filter.id].indexOf && 
+          row[filter.id].indexOf(filter.value) !== -1;
+        return keep;
+      }}
       columns={makeColumns(this)}
       defaultPageSize={10}
       className="-striped -highlight"
-      filtered={[{'id': "paths", 'value': this.props.selectionData.path}]}
+      filtered = {filter}
     />);
 
     return (
