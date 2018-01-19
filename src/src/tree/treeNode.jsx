@@ -27,9 +27,9 @@ const DeleteIcon = (node, onPlaylistDeleted) => (
   </div>
 );
 
-const FilterIcon = (node) => (<div onClick={() => { console.log("filter"); }} style={iconStyle}><i className="fa fa-filter" /></div>);
+//const FilterIcon = (node) => (<div onClick={() => { console.log("filter"); }} style={iconStyle}><i className="fa fa-filter" /></div>);
 
-const DeselectChildrenIcon = () => (<div onClick={() => { console.log("folder"); }} style={iconStyle}><i className="fa fa-folder" /></div>);
+//const DeselectChildrenIcon = () => (<div onClick={() => { console.log("folder"); }} style={iconStyle}><i className="fa fa-folder" /></div>);
 const SelectIcon = (node,onPathSelectionChange) => (<div onClick={() => { console.log("select", node); onPathSelectionChange(node); }} style={iconStyle}><i className="fa fa-folder" /></div>); //<input id="checkBox" type="checkbox" />
 const AddNewPlaylistIcon = () => (<div onClick={() => { console.log("addNewPlaylistIcon"); }} style={iconStyle}><i className="fa fa-plus" /></div>);
 
@@ -41,7 +41,7 @@ const PlaylistLabel = (node, onPathSelectionChange, onPlaylistUpdated, onPlaylis
       color={node.color || "white"}
       onPlaylistUpdated = {(name, color)=>{onPlaylistUpdated({name, color, id: node.playlistId});}} />
     <div style={{ display: "inline", marginLeft: '4px', float: 'right' }}>
-      <FilterIcon />
+      {/*<FilterIcon />*/}
       {DeleteIcon(node, onPlaylistDeleted)}
     </div>
   </div>
@@ -74,8 +74,8 @@ const TrackLabel = (node, onPathSelectionChange) => {
           {node.name}
         </div>
         <div style={{ display: "inline", marginLeft: '4px', float: 'right' }}>
-          <FilterIcon />
-          <DeselectChildrenIcon />
+          {/*<FilterIcon />*/}
+          {/*<DeselectChildrenIcon />*/}
         </div>
       </div>
     );
