@@ -10,6 +10,11 @@ import RowSelectCheckbox from './row/rowSelectCheckbox';
 import RowTags from './row/rowTags';
 import RowTagsDropDown from './row/rowTagsDropDown';
 
+import {connect} from 'react-redux';
+import {setYoutubeId, 
+  fulfillRequestNextTrack, 
+  fulfillRequestPreviousTrack} from './actions/youtube';
+
 function makeColumns(_this){
 return [
   {
@@ -19,7 +24,14 @@ return [
       {
         Header: "Play",
         id: 'playButton',
-        Cell: row => (<RowPlayButton />),
+        Cell: (row, a, b, c) => (<RowPlayButton onClick = {()=>{
+          console.log(row);
+          let {viewIndex, pageSize, page} = row;
+          viewIndex = viewIndex + (pageSize * page);
+          console.log("set view index", viewIndex);
+          _this.setState({lastClickedRow: viewIndex});
+          _this.props.dispatch(setYoutubeId(row.row.YoutubeId, row.row.hash));
+        }}/>),
       },
       
       {
@@ -131,6 +143,43 @@ return [
 
  class TrackTable extends Component {
 
+  constructor(){
+    super();
+    this.state = {
+      lastClickedRow: null, //this is the view index
+      resolvedData: null
+    };
+  }
+
+  componentWillReceiveProps(nextProps){
+    console.log("nextProps", nextProps);
+    if(this.state.lastClickedRow >= 0){
+      let viewIndex = this.state.lastClickedRow;
+      if(nextProps.nextTrackRequested){
+        console.log("next track requested");
+        if(viewIndex === this.state.resolvedData.length-1){viewIndex = -1;}
+        viewIndex += 1;
+        const nextRow = this.state.resolvedData[viewIndex];
+        const {YoutubeId, hash} = nextRow;
+        console.log("Going to next track ", nextRow, YoutubeId, hash);
+        this.setState({lastClickedRow : viewIndex});
+        this.props.dispatch(setYoutubeId(YoutubeId, hash));
+
+      } else if(nextProps.previousTrackRequested){
+        console.log("prev track requested");
+        if(viewIndex === 0){viewIndex = this.state.resolvedData.length;}
+        viewIndex -= 1;
+        const nextRow = this.state.resolvedData[viewIndex];
+        console.log("viewIndex, nextRow", viewIndex, nextRow);
+        const {YoutubeId, hash} = nextRow;
+        console.log("Going to prev track ", nextRow, YoutubeId, hash);
+        this.setState({lastClickedRow : viewIndex});
+        this.props.dispatch(setYoutubeId(YoutubeId, hash));
+
+      }
+    }
+  }
+
   render(){
     console.log("render tracktable");
 
@@ -144,6 +193,14 @@ return [
       || (!this.props.selectionData.path && !this.props.selectionData.playlistId))
     ?
     (<ReactTable
+      getTdProps={(tableState, rowInfo) => ({
+        onClick: (e, handleOriginal) => {
+          console.log("tableState", tableState);
+          this.setState({resolvedData : tableState.sortedData});
+          if (handleOriginal) {
+            handleOriginal();
+          }
+        }})}
       data={this.props.data}
       filterable
       defaultFilterMethod={(filter, row) => {
@@ -157,6 +214,14 @@ return [
     />)
     :
     (<ReactTable
+      getTdProps={(tableState, rowInfo) => ({
+        onClick: (e, handleOriginal) => {
+          console.log("tableState", tableState);
+          this.setState({resolvedData : tableState.sortedData});
+          if (handleOriginal) {
+            handleOriginal();
+          }
+        }})}
       data={this.props.data}
       filterable
       defaultFilterMethod={(filter, row) => {
@@ -179,18 +244,21 @@ return [
 }
   
 TrackTable.defaultProps = {
-  youtubeId: "-1",
   selectionData: [],
   playlistData: []
 };
+
 TrackTable.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object).isRequired,
   playlistData: PropTypes.arrayOf(PropTypes.object),
-  youtubeId: PropTypes.string,
   onSelection: PropTypes.func.isRequired,
   onDropDownSelect: PropTypes.func.isRequired,
-  setYoutubeIdCallback: PropTypes.func.isRequired,
   selectionData: PropTypes.object
 };
 
-export default TrackTable;
+export default connect((store)=>{
+  return {
+    nextTrackRequested : store.youtube.nextTrackRequested,
+    previousTrackRequested : store.youtube.previousTrackRequested
+  };
+})(TrackTable);

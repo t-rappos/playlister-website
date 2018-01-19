@@ -3,6 +3,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import YouTube from 'react-youtube';
 
+import { requestPreviousTrack, requestNextTrack } from './actions/youtube';
+import { connect } from 'react-redux';
+
 class TrackYoutubeDisplay extends Component {
   componentDidMount() {
     this.onStateChange = this.onStateChange.bind(this);
@@ -21,7 +24,7 @@ class TrackYoutubeDisplay extends Component {
     if (event && event.data === 0) {
       // trigger callback
       console.log("Going to next track");
-      this.props.nextTrackCallback();
+      this.props.dispatch(requestNextTrack());
     }
   }
 
@@ -36,21 +39,33 @@ class TrackYoutubeDisplay extends Component {
     };
 
     return (
+      <div>
+        <button
+          onClick={()=>{this.props.dispatch(requestPreviousTrack());}}>
+            Previous Track
+        </button>
+        <button
+         onClick={()=>{this.props.dispatch(requestNextTrack());}}>
+          Next Track
+        </button>
       <YouTube
         videoId={this.props.youtubeId}
         opts={opts}
         onReady={this.onReady}
         onStateChange={this.onStateChange}
-      />
+      /></div>
+      
     );
   }
 }
 
 TrackYoutubeDisplay.propTypes = {
-  youtubeId: PropTypes.string.isRequired,
-  nextTrackCallback: PropTypes.func.isRequired,
+  youtubeId: PropTypes.string,
 };
-export default TrackYoutubeDisplay;
+
+export default connect((store)=>{
+  return { youtubeId: store.youtube.youtubeId } ;}
+)(TrackYoutubeDisplay);
 
 
 // check for "" youtube search term

@@ -13,7 +13,7 @@ function generateYoutubeSearchTerm(artist, title) {
 }
 
 function generateSearchTermArray(data) {
-    return data.map(d => generateYoutubeSearchTerm(d.artist, d.title));
+    return data.map(d => {console.log("generateSearchTermArray", d); return generateYoutubeSearchTerm(d.artist, d.title)});
 }
 
 function searchYoutube(term) {
