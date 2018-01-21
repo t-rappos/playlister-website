@@ -1,5 +1,11 @@
 const db = require('../../db');
-const googleApiKey = require('../local_config.js').googleApi;
+
+const googleApiKey = "";
+if(!process.env.GOOGLE_API_KEY){
+    googleApiKey = require('../local_config.js').googleApi;
+} else {
+    googleApiKey = process.env.GOOGLE_API_KEY;
+}
 const search = require('youtube-search');
 const Promise = require("bluebird");
 
