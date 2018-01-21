@@ -1,6 +1,6 @@
 const db = require('../../db');
 
-const googleApiKey = "";
+let googleApiKey = "";
 if(!process.env.GOOGLE_API_KEY){
     googleApiKey = require('../local_config.js').googleApi;
 } else {
