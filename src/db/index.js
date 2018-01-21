@@ -6,17 +6,20 @@ Tables.sequelize = null;
 
 let localConfig = null;
 try {
-    localConfig = require('../db/local_config.js');
-    Tables.sequelize = new Sequelize(localConfig.config);
+    if(!process.env.DATABASE_URL){
+        localConfig = require('../db/local_config.js');
+        Tables.sequelize = new Sequelize(localConfig.config);
+    } else {
+        console.log('couldnt load local database configuration, must use production config');
+        if (process.env.DATABASE_URL && process.env.DATABASE_URL != '') {
+            console.log('found production config');
+            Tables.sequelize = new Sequelize(process.env.DATABASE_URL);
+        } else {
+            console.log('couldnt find production config');
+        }
+    }
 } catch (e) {
     console.log(e);
-    console.log('couldnt load local database configuration, must use production config');
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL != '') {
-        console.log('found production config');
-        Tables.sequelize = new Sequelize(process.env.DATABASE_URL);
-    } else {
-        console.log('couldnt find production config');
-    }
 }
 
 if (Tables.sequelize) {
