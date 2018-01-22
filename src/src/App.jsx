@@ -118,7 +118,7 @@ const LandingPage = () => (
             </p>
             <Header as="h3" style={{ fontSize: '2em' }}>We Make Bananas That Can Dance</Header>
             <p style={{ fontSize: '1.33em' }}>
-                  Yes that's right, you thought it was the stuff of dreams, but even bananas can be bioengineered.
+              {`Yes that's right, you thought it was the stuff of dreams, but even bananas can be bioengineered.`}
             </p>
           </Grid.Column>
           <Grid.Column floated="right" width={6}>
@@ -142,11 +142,11 @@ const LandingPage = () => (
       <Grid celled="internally" columns="equal" stackable>
         <Grid.Row textAlign="center">
           <Grid.Column style={{ paddingBottom: '5em', paddingTop: '5em' }}>
-            <Header as="h3" style={{ fontSize: '2em' }}>"What a Company"</Header>
+            <Header as="h3" style={{ fontSize: '2em' }}>What a Company</Header>
             <p style={{ fontSize: '1.33em' }}>That is what they all say about us</p>
           </Grid.Column>
           <Grid.Column style={{ paddingBottom: '5em', paddingTop: '5em' }}>
-            <Header as="h3" style={{ fontSize: '2em' }}>"I shouldn't have gone with their competitor."</Header>
+            <Header as="h3" style={{ fontSize: '2em' }}>I shouldnt have gone with their competitor.</Header>
             <p style={{ fontSize: '1.33em' }}>
               <Image avatar src="/assets/images/avatar/large/nan.jpg" />
               <b>Nan</b> Chief Fun Officer Acme Toys
@@ -174,11 +174,11 @@ const LandingPage = () => (
         </Divider>
         <Header as="h3" style={{ fontSize: '2em' }}>Did We Tell You About Our Bananas?</Header>
         <p style={{ fontSize: '1.33em' }}>
-              Yes I know you probably disregarded the earlier boasts as non-sequitur filler content, but it's really
+              Yes I know you probably disregarded the earlier boasts as non-sequitur filler content, but its really
               true.
               It took years of gene splicing and combinatory DNA research, but our bananas can really dance.
         </p>
-        <Button as="a" size="large">I'm Still Quite Interested</Button>
+        <Button as="a" size="large">Im Still Quite Interested</Button>
       </Container>
     </Segment>
     <Footer />

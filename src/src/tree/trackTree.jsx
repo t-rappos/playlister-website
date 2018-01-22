@@ -1,29 +1,26 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React from 'react';
 import TreeNode from './treeNode';
 
-class TrackTree extends Component {
+const TrackTree = props => (
+  <div style={{ minWidth: 'max-content' }} >
+    <TreeNode
+      data={props.data}
+      onPathSelectionChange={props.onPathSelectionChange}
+      hidden={false}
+      openByDefault
+      onPlaylistUpdated={props.onPlaylistUpdated}
+      onPlaylistDeleted={props.onPlaylistDeleted}
+    />
+  </div>
+);
 
-  render() {
-    return (
-      <div style={{ minWidth: 'max-content' }} >
-        <TreeNode
-        data ={this.props.data}
-        onPathSelectionChange={this.props.onPathSelectionChange}
-        hidden={false}
-        openByDefault
-        onPlaylistUpdated = {this.props.onPlaylistUpdated}
-        onPlaylistDeleted = {this.props.onPlaylistDeleted} />
-      </div>
-    );
-  }
-}
 
 TrackTree.propTypes = {
   data: PropTypes.object.isRequired,
-  onPathSelectionChange : PropTypes.func.isRequired,
-  onPlaylistUpdated : PropTypes.func.isRequired,
-  onPlaylistDeleted : PropTypes.func.isRequired,
+  onPathSelectionChange: PropTypes.func.isRequired,
+  onPlaylistUpdated: PropTypes.func.isRequired,
+  onPlaylistDeleted: PropTypes.func.isRequired,
 };
 
 export default TrackTree;

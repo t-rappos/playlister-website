@@ -1,8 +1,9 @@
-
+/* eslint react/no-array-index-key:0 */
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import EditText from "./editText";
 import { VelocityComponent } from 'velocity-react';
+
+import EditText from "./editText";
 
 /*
   NOTE: symbols looked for are:
@@ -16,6 +17,9 @@ const textLabelStyle = { display: "inline", marginLeft: '4px' };
 
 const DeleteIcon = (node, onPlaylistDeleted) => (
   <div
+    role="button"
+    tabIndex={0}
+    onKeyPress={this.onClick}
     onClick={() => {
       if (window.confirm(`Are you sure you want to delete playlist ${node.name} ?`)) {
         onPlaylistDeleted({ id: node.playlistId });
@@ -30,8 +34,33 @@ const DeleteIcon = (node, onPlaylistDeleted) => (
 // const FilterIcon = (node) => (<div onClick={() => { console.log("filter"); }} style={iconStyle}><i className="fa fa-filter" /></div>);
 
 // const DeselectChildrenIcon = () => (<div onClick={() => { console.log("folder"); }} style={iconStyle}><i className="fa fa-folder" /></div>);
-const SelectIcon = (node, onPathSelectionChange) => (<div onClick={() => { console.log("select", node); onPathSelectionChange(node); }} style={iconStyle}><i className="fa fa-folder" /></div>); // <input id="checkBox" type="checkbox" />
-const AddNewPlaylistIcon = () => (<div onClick={() => { console.log("addNewPlaylistIcon"); }} style={iconStyle}><i className="fa fa-plus" /></div>);
+const SelectIcon = (node, onPathSelectionChange) => (
+  <div
+    role="button"
+    tabIndex={0}
+    onKeyPress={this.onClick}
+    onClick={() => {
+      onPathSelectionChange(node);
+    }}
+    style={iconStyle}
+  >
+    <i className="fa fa-folder" />
+  </div>
+);
+// <input id="checkBox" type="checkbox" />
+const AddNewPlaylistIcon = () => (
+  <div
+    role="button"
+    tabIndex={0}
+    onKeyPress={this.onClick}
+    onClick={() => {
+      console.log("addNewPlaylistIcon");
+    }
+    }
+    style={iconStyle}
+  ><i className="fa fa-plus" />
+  </div>
+);
 
 const PlaylistLabel = (node, onPathSelectionChange, onPlaylistUpdated, onPlaylistDeleted) => (
   <div>
@@ -126,8 +155,15 @@ class TreeNode extends Component {
     return (
       <div style={hiddenStyle}>
         <div style={{ display: "inline", float: "left", color: 'rgba(0,0,0,0)' }}>{leftPad}</div>
-        {this.props.data.children
-          ? <div onClick={this.onClick} style={{ display: "inline", cursor: 'pointer' }}>{ToggleIconText}</div>
+        {this.props.data.children ?
+          <div
+            role="button"
+            tabIndex={0}
+            onKeyPress={this.onClick}
+            onClick={this.onClick}
+            style={{ display: "inline", cursor: 'pointer' }}
+          >{ToggleIconText}
+          </div>
           : "" }
         <div style={{ display: "inline" }}>{
           (this.props.data.playlistId === undefined)

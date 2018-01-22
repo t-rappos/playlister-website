@@ -9,7 +9,7 @@ const MakeSelectItem = (name, id, selected) => {
 
 const RowTagsDropDown = props => (
   <div>
-    <select name="text" onChange={(e)=>{console.log(e.target.value); props.onSelection(e.target.value);}}>
+    <select name="text" onChange={(e) => { console.log(e.target.value); props.onSelection(e.target.value); }}>
       <option value="">...</option>
       {props.tagNames.map((tagName, index) => MakeSelectItem(
         tagName,
@@ -24,7 +24,7 @@ RowTagsDropDown.propTypes = {
   tagNames: PropTypes.arrayOf(PropTypes.string).isRequired,
   tagIds: PropTypes.arrayOf(PropTypes.number).isRequired, // id of the playlist or tag
   tagSelectedArray: PropTypes.arrayOf(PropTypes.bool).isRequired,
-  onSelection: PropTypes.func.isRequired, //calls onSelection(tagId)
+  onSelection: PropTypes.func.isRequired, // calls onSelection(tagId)
 };
 
 export default RowTagsDropDown;

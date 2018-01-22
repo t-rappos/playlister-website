@@ -24,7 +24,7 @@ function trimSlashes(data) {
 function convertPlaylistData(data) {
   // take what we want
   const dataMap = data.map(d => ({ name: d.name, playlistId: d.id }));
-  dataMap.push({ name: 'add new playlist',  playlistId: -1 }); //isAddNewPlaylist: true
+  dataMap.push({ name: 'add new playlist', playlistId: -1 }); // isAddNewPlaylist: true
   const result = { name: 'playlists', children: dataMap };
   return result;
 }
@@ -50,7 +50,6 @@ const filepathsRaw2 = [
 */
 
 function convertRawFilepaths(pdata, depth) {
-
   if (depth > 60) {
     return "max depth";
   }
@@ -59,7 +58,7 @@ function convertRawFilepaths(pdata, depth) {
   const result = [];
 
   pdata.forEach((path) => {
-    if(path !== ""){
+    if (path !== "") {
       const bs = path.indexOf('\\');
       const fs = path.indexOf('/');
       const slashIndex = bs > fs ? bs : fs;
@@ -75,9 +74,9 @@ function convertRawFilepaths(pdata, depth) {
   });
 
   map.forEachEntry((entry, key) => {
-    var hasChildren = false;
-    entry.forEach((p)=>{if(p !== "" && p.length > 0){hasChildren = true;}});
-    if(hasChildren){
+    let hasChildren = false;
+    entry.forEach((p) => { if (p !== "" && p.length > 0) { hasChildren = true; } });
+    if (hasChildren) {
       result.push({ name: key, children: convertRawFilepaths(entry, depth + 1) });
     } else {
       result.push({ name: key });
@@ -91,82 +90,86 @@ function convertRawFilepaths(pdata, depth) {
 function fillTreeWithData(data, pathSoFar) {
   const sep = (pathSoFar === '') ? "" : "/";
   data.path = pathSoFar + sep + data.name;
-  if (!data || !data.children) {return; }
+  if (!data || !data.children) { return; }
   for (let i = 0; i < data.children.length; i += 1) {
     fillTreeWithData(data.children[i], pathSoFar + sep + data.name);
   }
 }
 
-async function post(endpoint, body){
-  return await fetch(endpoint, {
-    method: "POST", 
-    headers: {'Content-Type': 'application/json'}, 
+async function post(endpoint, body) {
+  return fetch(endpoint, {
+    method: "POST",
+    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(body),
   });
 }
 
+
+async function onPlaylistDeleted(playlist) {
+  console.log("on playlist deleted", playlist);
+  const res = await post('/removeplaylist', playlist);
+  console.log(res);
+}
+
+async function onPlaylistUpdated(playlist) {
+  console.log("on playlist updated", playlist);
+  if (playlist.color === "") { playlist.color = null; }
+  if (playlist.name === "") { playlist.name = null; }
+  playlist.icon = null; // TODO: consolidate icon, or make it so we only display icon if it isn't ""
+
+  if (playlist.id >= 0) { // we need to update
+    const res = await post("/updateplaylist", playlist);
+    console.log(res);
+  } else { // we need to create a new playlist
+    const res = await post("/playlist", playlist);
+    console.log(res);
+  }
+}
+
 class TrackTreeContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = { filePathData: []};
-    this.onPlaylistUpdated = this.onPlaylistUpdated.bind(this);
-    this.onPlaylistDeleted = this.onPlaylistDeleted.bind(this);
+    this.state = { filePathData: [] };
   }
 
-  async onPlaylistDeleted(playlist){
-    console.log("on playlist deleted", playlist);
-    let res = await post('/removeplaylist', playlist);
-    console.log(res);
-  }
 
-  async onPlaylistUpdated(playlist){
-    console.log("on playlist updated", playlist);
-    if (playlist.color === ""){playlist.color = null;}
-    if (playlist.name === ""){playlist.name = null;}
-    playlist.icon = null; //TODO: consolidate icon, or make it so we only display icon if it isn't ""
-    
-    if(playlist.id >= 0){ //we need to update
-      let res = await post("/updateplaylist", playlist);
-      console.log(res);
-    } else { //we need to create a new playlist
-      let res = await post("/playlist", playlist);
-      console.log(res);
-    }
-  }
-
-  async componentDidMount() {
+  async componentWillMount() {
     try {
       const paths = await fetch('/paths', { method: "GET", credentials: 'include' });
       const pathsFromJSON = await paths.json();
-      const pathArray = pathsFromJSON.map(n => trimSlashes("(" + n.did +") " + n.path).replace(/\\/g, "/"));
+      const pathArray = pathsFromJSON.map(n => trimSlashes(`(${n.did}) ${n.path}`).replace(/\\/g, "/"));
       const r = convertRawFilepaths(pathArray, 0);
       r.forEach((x) => { fillTreeWithData(x, ''); });
-      this.setState({ filePathData : r});
+      this.setState({ filePathData: r });
     } catch (e) {
       console.log("Couldn't load tracks", e);
     }
   }
 
+
   render() {
     const p = convertPlaylistData(this.props.playlistData);
     const data = { name: 'tracks', children: [...this.state.filePathData, p] };
 
-    return (<div style={{overflow: 'auto', maxHeight: '90vh', minWidth: '100px'}}> <Tree 
-      data={data} 
-      onPlaylistDeleted = {this.onPlaylistDeleted }
-      onPathSelectionChange={this.props.onPathSelectionChange} 
-      onPlaylistUpdated={this.onPlaylistUpdated} /> </div>);
+    return (
+      <div style={{ overflow: 'auto', maxHeight: '90vh', minWidth: '100px' }}> <Tree
+        data={data}
+        onPlaylistDeleted={onPlaylistDeleted}
+        onPathSelectionChange={this.props.onPathSelectionChange}
+        onPlaylistUpdated={onPlaylistUpdated}
+      />
+      </div>);
   }
 }
 
 TrackTreeContainer.defaultProps = {
-  playlistData : []
+  playlistData: [],
 };
 
 TrackTreeContainer.propTypes = {
-  onPathSelectionChange : PropTypes.func.isRequired,
-  playlistData : PropTypes.arrayOf(PropTypes.object)
+  onPathSelectionChange: PropTypes.func.isRequired,
+  playlistData: PropTypes.arrayOf(PropTypes.object),
 };
 
 export default TrackTreeContainer;

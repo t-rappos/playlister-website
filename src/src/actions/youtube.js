@@ -18,19 +18,18 @@ async function findYoutubeId(hash) {
   return false;
 }
 
-export function setYoutubeId(id, hash){
+export function setYoutubeId(id, hash) {
   console.log("setYoutubeId", id, hash);
-  if(id){
-    return {type:"SET_YOUTUBE_ID", payload: id};
-  } else {
-    return {type:"SET_YOUTUBE_ID", payload: findYoutubeId(hash)};
+  if (id) {
+    return { type: "SET_YOUTUBE_ID", payload: id };
   }
+  return { type: "SET_YOUTUBE_ID", payload: findYoutubeId(hash) };
 }
 
-export function requestPreviousTrack(){
-  return {type:"REQUEST_PREVIOUS_TRACK"};
+export function requestPreviousTrack() {
+  return { type: "REQUEST_PREVIOUS_TRACK" };
 }
 
-export function requestNextTrack(){
-  return {type:"REQUEST_NEXT_TRACK"};
+export function requestNextTrack() {
+  return { type: "REQUEST_NEXT_TRACK" };
 }

@@ -23,7 +23,8 @@ function makeColumns(_this) {
           id: 'playButton',
           Cell: row => (<RowPlayButton onClick={() => {
             console.log(row);
-            let { viewIndex, pageSize, page } = row;
+            const { pageSize, page } = row;
+            let { viewIndex } = row;
             viewIndex += (pageSize * page);
             console.log("set view index", viewIndex);
             _this.setState({ lastClickedRow: viewIndex });
@@ -190,14 +191,14 @@ class TrackTable extends Component {
     const filterValue = this.props.selectionData.path || this.props.selectionData.playlistId || "paths";
     const filterId = this.props.selectionData.path ? "paths" :
       (this.props.selectionData.playlistId ? "playlistIds" : "");
-    const filter = [{ id: filterId, value: `${filterValue}` }];
-    console.log('filter', filter);
+    const filterConditions = [{ id: filterId, value: `${filterValue}` }];
+    console.log('filter', filterConditions);
 
     const RT = (this.props.selectionData === []
       || (!this.props.selectionData.path && !this.props.selectionData.playlistId))
       ?
       (<ReactTable
-        getTdProps={(tableState, rowInfo) => ({
+        getTdProps={tableState => ({ // rowInfo
           onClick: (e, handleOriginal) => {
             console.log("tableState", tableState);
             this.setState({ resolvedData: tableState.sortedData });
@@ -219,7 +220,7 @@ class TrackTable extends Component {
       />)
       :
       (<ReactTable
-        getTdProps={(tableState, rowInfo) => ({
+        getTdProps={tableState => ({
           onClick: (e, handleOriginal) => {
             console.log("tableState", tableState);
             this.setState({ resolvedData: tableState.sortedData });
@@ -238,7 +239,7 @@ class TrackTable extends Component {
         columns={makeColumns(this)}
         defaultPageSize={8}
         className="-striped -highlight"
-        filtered={filter}
+        filtered={filterConditions}
       />);
 
     return (
@@ -254,13 +255,16 @@ TrackTable.defaultProps = {
   selectionData: [],
   playlistData: [],
 };
-
+/* eslint react/no-unused-prop-types:0 */
 TrackTable.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object).isRequired,
   playlistData: PropTypes.arrayOf(PropTypes.object),
   onSelection: PropTypes.func.isRequired,
   onDropDownSelect: PropTypes.func.isRequired,
   selectionData: PropTypes.object,
+  nextTrackRequested: PropTypes.bool.isRequired,
+  previousTrackRequested: PropTypes.bool.isRequired,
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default connect(store => ({

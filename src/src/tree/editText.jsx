@@ -42,7 +42,7 @@ class EditText extends Component {
     if (e) { e.preventDefault(); }
     if (this.state.editing) {
       console.log("remember, dont value use if empty string (", this.state.lastEditText, this.state.lastColor, ")");
-      if(this.state.lastEditText !== "" || this.state.lastColor !== ""){
+      if (this.state.lastEditText !== "" || this.state.lastColor !== "") {
         this.props.onPlaylistUpdated(this.state.lastEditText, this.state.lastColor);
       }
     }

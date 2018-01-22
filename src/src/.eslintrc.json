@@ -5,6 +5,10 @@
         "browser": true
     },
     "rules": {
+        "no-param-reassign" : 1,
+        "react/forbid-prop-types": 1,
+        "no-nested-ternary" : 1,
+        "max-len": "off",
         "jsx-a11y/href-no-hash": "off",
         "jsx-a11y/anchor-is-valid": ["off", { "aspects": ["invalidHref"] }],
         "indent": [

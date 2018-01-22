@@ -16,7 +16,7 @@ class TrackYoutubeDisplay extends Component {
   onReady(event) {
     // access to player in all event handlers via event.target
     event.target.pauseVideo();
-    console.log("onReady ", event);
+    console.log("onReady ", event, this.onReady);
   }
 
   onStateChange(event) {
@@ -69,7 +69,8 @@ class TrackYoutubeDisplay extends Component {
 }
 
 TrackYoutubeDisplay.propTypes = {
-  youtubeId: PropTypes.string,
+  youtubeId: PropTypes.string.isRequired,
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default connect(store => ({ youtubeId: store.youtube.youtubeId }))(TrackYoutubeDisplay);

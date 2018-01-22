@@ -7,13 +7,14 @@ import TrackTable from './trackTable';
 import TrackYoutubeDisplay from './trackYoutubeDisplay';
 import TrackTreeContainer from './tree/trackTreeContainer';
 
-const NULL_SEARCH_TERM = '2Vv-BfVoq4g'; // TODO: update this automatically?
+// const NULL_SEARCH_TERM = '2Vv-BfVoq4g'; // TODO: update this automatically?
 
 function getSelectedTracks(tracks) {
   return tracks.filter(t => t.selected === true);
 }
 
 // TODO: remove this or use it in trackTable.
+/*
 function checkNextTrackValid(youtubeId, ptitle, palbum, partist) {
   if (!!youtubeId && youtubeId === NULL_SEARCH_TERM) { console.log("checkNextTrackValid: null search term"); return false; }
   let title = ptitle;
@@ -26,6 +27,7 @@ function checkNextTrackValid(youtubeId, ptitle, palbum, partist) {
   if (!album && !title) { console.log("checkNextTrackValid: 2 null"); return false; }
   return true;
 }
+*/
 
 class TrackContainer extends Component {
   constructor() {
@@ -114,7 +116,7 @@ class TrackContainer extends Component {
   onPathSelectionChange(selectionData) {
     if (selectionData.path) {
       const op = selectionData.path;
-      let s = op.substr(op.indexOf(")") + 1, op.length - op.indexOf(")") + 1);
+      let s = op.substr(op.indexOf(")") + 1, (op.length - op.indexOf(")")) + 1);
       s = s.trim();
       selectionData.path = s;
     }
