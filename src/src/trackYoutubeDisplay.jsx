@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
-
 import PropTypes from 'prop-types';
 import YouTube from 'react-youtube';
+import { Button, Grid } from 'semantic-ui-react';
+import { connect } from 'react-redux';
 
 import { requestPreviousTrack, requestNextTrack } from './actions/youtube';
-import { connect } from 'react-redux';
+
 
 class TrackYoutubeDisplay extends Component {
   componentDidMount() {
@@ -18,7 +19,6 @@ class TrackYoutubeDisplay extends Component {
     console.log("onReady ", event);
   }
 
-
   onStateChange(event) {
     console.log("state change", event);
     if (event && event.data === 0) {
@@ -27,7 +27,6 @@ class TrackYoutubeDisplay extends Component {
       this.props.dispatch(requestNextTrack());
     }
   }
-
 
   render() {
     const opts = {
@@ -40,21 +39,31 @@ class TrackYoutubeDisplay extends Component {
 
     return (
       <div>
-        <button
-          onClick={()=>{this.props.dispatch(requestPreviousTrack());}}>
-            Previous Track
-        </button>
-        <button
-         onClick={()=>{this.props.dispatch(requestNextTrack());}}>
-          Next Track
-        </button>
-      <YouTube
-        videoId={this.props.youtubeId}
-        opts={opts}
-        onReady={this.onReady}
-        onStateChange={this.onStateChange}
-      /></div>
-      
+        <Grid>
+          <div className="two wide column">
+            <Button
+              onClick={() => { this.props.dispatch(requestPreviousTrack()); }}
+            >
+                Previous Track
+            </Button>
+          </div>
+          <div className="twelve wide column">
+            <YouTube
+              videoId={this.props.youtubeId}
+              opts={opts}
+              onReady={this.onReady}
+              onStateChange={this.onStateChange}
+            />
+          </div>
+          <div className="two wide column">
+            <Button
+              onClick={() => { this.props.dispatch(requestNextTrack()); }}
+            >
+              Next Track
+            </Button>
+          </div>
+        </Grid>
+      </div>
     );
   }
 }
@@ -63,9 +72,7 @@ TrackYoutubeDisplay.propTypes = {
   youtubeId: PropTypes.string,
 };
 
-export default connect((store)=>{
-  return { youtubeId: store.youtube.youtubeId } ;}
-)(TrackYoutubeDisplay);
+export default connect(store => ({ youtubeId: store.youtube.youtubeId }))(TrackYoutubeDisplay);
 
 
 // check for "" youtube search term

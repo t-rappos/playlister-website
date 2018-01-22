@@ -1,14 +1,15 @@
 const db = require('../../db');
 
 let googleApiKey = "";
-if(!process.env.GOOGLE_API_KEY){
+if(!process.env.DATABASE_URL){  //NOTE: process.env.GOOGLE_API_KEY is set erroneously by electron. so we'll just poll DATABASE URL, to detect if we're live.
     googleApiKey = require('../local_config.js').googleApi;
+    console.log("loaded google api key from local storage");
 } else {
     googleApiKey = process.env.GOOGLE_API_KEY;
+    console.log("loaded google api key from process.env");
 }
 const search = require('youtube-search');
 const Promise = require("bluebird");
-
 
 function generateYoutubeSearchTerm(artist, title) {
     if (artist === "" || title === "") { return "xxxxx"; }
@@ -31,11 +32,9 @@ function searchYoutube(term) {
         };
         search(term, opts, (err, results) => {
             if (err) {
-                console.log(err);
                 reject(err);
             }
             if (results && results.length > 0 && results[0].id) {
-                // console.log(results);
                 resolve(db.YoutubeTrack.update(
                     { youtubeId: results[0].id },
                     { where: { searchTerm: term } },

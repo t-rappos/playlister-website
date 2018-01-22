@@ -304,7 +304,7 @@ app.post(
     (req, res) => {
         req.login(req.user, () => {
             console.log("logged in");
-            res.redirect('/');
+            res.redirect('/main');
             // return res.send('Login successful');
         });
     },

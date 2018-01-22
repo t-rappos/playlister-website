@@ -152,7 +152,7 @@ class TrackTreeContainer extends Component {
     const p = convertPlaylistData(this.props.playlistData);
     const data = { name: 'tracks', children: [...this.state.filePathData, p] };
 
-    return (<div> <Tree 
+    return (<div style={{overflow: 'auto', maxHeight: '90vh', minWidth: '100px'}}> <Tree 
       data={data} 
       onPlaylistDeleted = {this.onPlaylistDeleted }
       onPathSelectionChange={this.props.onPathSelectionChange} 

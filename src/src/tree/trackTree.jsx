@@ -6,7 +6,7 @@ class TrackTree extends Component {
 
   render() {
     return (
-      <div style={{ minWidth: '200px' }} >
+      <div style={{ minWidth: 'max-content' }} >
         <TreeNode
         data ={this.props.data}
         onPathSelectionChange={this.props.onPathSelectionChange}
@@ -15,7 +15,6 @@ class TrackTree extends Component {
         onPlaylistUpdated = {this.props.onPlaylistUpdated}
         onPlaylistDeleted = {this.props.onPlaylistDeleted} />
       </div>
-
     );
   }
 }
