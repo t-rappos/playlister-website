@@ -1,3 +1,5 @@
+/* eslint linebreak-style:0 */
+
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
