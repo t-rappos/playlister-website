@@ -80,7 +80,7 @@ function makeColumns(_this) {
         {
           Header: "Copies",
           id: 'copies',
-          accessor: d => 0, // d.filenames.split(',').length || 0,
+          accessor: d => d.paths.split(',').length || 0,
           Cell: row => (<RowCopies copies={row.value} />),
         },
         {

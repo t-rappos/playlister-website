@@ -96,6 +96,19 @@ class TrackContainer extends Component {
         }),
       });
     }
+    let tracks = [];
+    try {
+      const tracksf = await fetch('/tracks', { method: "GET", credentials: 'include' });
+      tracks = await tracksf.json();
+      tracks.forEach((t, index) => {
+        t.paths = t.paths.replace(/\\/g, "/");
+        t.dataIndex = index;
+        t.selected = false;
+      });
+    } catch (e) {
+      console.log("Couldn't load tracks", e);
+    }
+    this.setState({ tracks });
   }
 
   onPathSelectionChange(selectionData) {
