@@ -62,8 +62,8 @@ app.get(
     },
 );
 
-async function handleDbError(fn){
-    try{
+async function handleDbError(fn) {
+    try {
         await fn();
     } catch (e) {
         console.error(e);
@@ -71,15 +71,17 @@ async function handleDbError(fn){
     }
 }
 
-app.post('/playlist', isLoggedIn, async (req,res)=>{
-    const {name, color, icon} = req.body; 
+app.post('/playlist', isLoggedIn, async (req, res) => {
+    const { name, color, icon } = req.body;
     const result = await dbApi.addPlaylist(req.user.id, name, color, icon);
     res.send(200, 'Ok');
 });
 
-app.post('/updateplaylist', isLoggedIn, async (req,res)=>{
-    try{
-        const {id, name, color, icon} = req.body; 
+app.post('/updateplaylist', isLoggedIn, async (req, res) => {
+    try {
+        const {
+            id, name, color, icon,
+        } = req.body;
         const result = await dbApi.updatePlaylist(id, req.user.id, name, color, icon);
         console.log(result);
         res.send(200, 'Ok');
@@ -89,44 +91,44 @@ app.post('/updateplaylist', isLoggedIn, async (req,res)=>{
     }
 });
 
-app.post('/removeplaylist', isLoggedIn, async (req,res)=>{
+app.post('/removeplaylist', isLoggedIn, async (req, res) => {
     const result = await dbApi.removePlaylist(req.body.id);
     console.log(result);
     res.send(200, 'Ok');
 });
 
-app.post('/playlisttracks', isLoggedIn, async (req,res)=>{ 
+app.post('/playlisttracks', isLoggedIn, async (req, res) => {
     const result = await dbApi.addTracksToPlaylist(req.body.trackIds, req.body.playlistId);
     console.log(result);
     res.send(200, 'Ok');
 });
 
 
-//TODO: find a nice way to return 404 if a sql error occurs in these methods.
-app.post('/removeplaylisttracks', isLoggedIn, async (req,res)=>{
-        const result = await dbApi.removeTracksFromPlaylist(req.body.trackIds, req.body.playlistId);
-        console.log(result);
-        res.send(200, 'Ok');
+// TODO: find a nice way to return 404 if a sql error occurs in these methods.
+app.post('/removeplaylisttracks', isLoggedIn, async (req, res) => {
+    const result = await dbApi.removeTracksFromPlaylist(req.body.trackIds, req.body.playlistId);
+    console.log(result);
+    res.send(200, 'Ok');
 });
 
-app.post('/toggleplaylisttracks', isLoggedIn, async (req,res)=>{
+app.post('/toggleplaylisttracks', isLoggedIn, async (req, res) => {
     console.log("toggleplaylisttracks", req.body);
-    const {trackIds, playlistId} = req.body;
-    if(!trackIds || trackIds.length===0){console.error("no tracks sent"); res.send(404, 'error');}
-    if(!playlistId ){console.error("no playlist sent"); res.send(404, 'error');}
+    const { trackIds, playlistId } = req.body;
+    if (!trackIds || trackIds.length === 0) { console.error("no tracks sent"); res.send(404, 'error'); }
+    if (!playlistId) { console.error("no playlist sent"); res.send(404, 'error'); }
 
     const result = await dbApi.togglePlaylistForTracks(trackIds, playlistId);
     console.log(result);
     res.send(200, 'Ok');
 });
 
-app.get('/playlists', isLoggedIn, async (req,res)=>{
+app.get('/playlists', isLoggedIn, async (req, res) => {
     const result = await dbApi.getPlaylistsForUser(req.user.id);
     res.json(result);
 });
 
-app.get('/playlisttracks/:playlistId', isLoggedIn, async (req,res)=>{
-    const result = await dbApi.getPlaylistTrackIds(req.params.playlistId)
+app.get('/playlisttracks/:playlistId', isLoggedIn, async (req, res) => {
+    const result = await dbApi.getPlaylistTrackIds(req.params.playlistId);
     res.json(result);
 });
 
@@ -328,6 +330,18 @@ app.post('/register', (req, res) => {
 app.get('*', (req, res) => {
     res.sendFile(path.join(`${__dirname}/build/index.html`));
 });
+
+app.get('*.js', function (req, res, next) {
+    req.url = req.url + '.gz';
+    res.set('Content-Encoding', 'gzip');
+    next();
+  });
+
+  app.get('*.jsx', function (req, res, next) {
+    req.url = req.url + '.gz';
+    res.set('Content-Encoding', 'gzip');
+    next();
+  });
 
 app.listen(process.env.PORT || 8080);
 
