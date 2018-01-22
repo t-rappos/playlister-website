@@ -16,7 +16,7 @@
             4
         ],
         "linebreak-style": [
-            "warning",
+            1,
             "windows"
         ],
         "no-console": "warn",
