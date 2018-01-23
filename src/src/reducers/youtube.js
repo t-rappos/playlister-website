@@ -3,6 +3,10 @@ const youtubeReducerInitialState = {
   youtubeId: null,
   nextTrackRequested: false,
   previousTrackRequested: false,
+  sessionActive: false, // has the user logged in successfully and session is still active
+  tourActive: false,
+  messageBarContent: "",
+  messageBarVisible: true,
 };
 
 export default function reducer(state = youtubeReducerInitialState, action) {
@@ -23,14 +27,18 @@ export default function reducer(state = youtubeReducerInitialState, action) {
   case "REQUEST_PREVIOUS_TRACK":
     state = { ...state, previousTrackRequested: true };
     return state;
-    /*
-    case "FULFILL_REQUEST_NEXT_TRACK":
-      state = {...state, nextTrackRequested: false };
-      return state;
-    case "FULFILL_REQUEST_PREVIOUS_TRACK":
-      state = {...state, previousTrackRequested: false };
-      return state;
-      */
+  case "SESSION_ACTIVE":
+    state = { ...state, sessionActive: action.payload, tourActive: false };
+    return state;
+  case "START_TOUR":
+    state = { ...state, tourActive: true, sessionActive: false };
+    return state;
+  case "SET_MESSAGE_BAR_CONTENT":
+    state = { ...state, messageBarContent: action.payload, messageBarVisible: true };
+    return state;
+  case "DISMISS_MESSAGE":
+    state = { ...state, messageBarContent: "", messageBarVisible: false };
+    return state;
   default:
     return state;
   }

@@ -13,11 +13,11 @@ class TrackYoutubeDisplay extends Component {
     // this.checkYTID = this.checkYTID.bind(this);
   }
 
-  onReady(event) {
-    // access to player in all event handlers via event.target
-    event.target.pauseVideo();
-    console.log("onReady ", event, this.onReady);
-  }
+  // onReady(event) {
+  //   // access to player in all event handlers via event.target
+  //   //event.target.pauseVideo();
+  //   //console.log("onReady ", event, this.onReady);
+  // }
 
   onStateChange(event) {
     console.log("state change", event);
@@ -36,7 +36,14 @@ class TrackYoutubeDisplay extends Component {
         autoplay: 1,
       },
     };
-
+    const YT = (this.props.youtubeId) ?
+      (<YouTube
+        videoId={this.props.youtubeId}
+        opts={opts}
+        onReady={this.onReady}
+        onStateChange={this.onStateChange}
+      />) :
+      (<div style={{ height: '390px', width: '640px' }} />);
     return (
       <div>
         <Grid>
@@ -47,13 +54,8 @@ class TrackYoutubeDisplay extends Component {
                 Previous Track
             </Button>
           </div>
-          <div className="twelve wide column">
-            <YouTube
-              videoId={this.props.youtubeId}
-              opts={opts}
-              onReady={this.onReady}
-              onStateChange={this.onStateChange}
-            />
+          <div className="twelve wide column" style={{ minHeight: '390px', minWidth: '640px' }}>
+            {YT}
           </div>
           <div className="two wide column">
             <Button
@@ -68,8 +70,12 @@ class TrackYoutubeDisplay extends Component {
   }
 }
 
+TrackYoutubeDisplay.defaultProps = {
+  youtubeId: null,
+};
+
 TrackYoutubeDisplay.propTypes = {
-  youtubeId: PropTypes.string.isRequired,
+  youtubeId: PropTypes.string,
   dispatch: PropTypes.func.isRequired,
 };
 

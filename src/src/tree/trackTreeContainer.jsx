@@ -1,17 +1,20 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Multimap from 'multimap';
+import { connect } from 'react-redux';
+import { showMessage } from "../actions/youtube";
 import Tree from './trackTree';
 
 
 // TODO: do we want to send tracks as well?
 // TODO: remember to add symbols with colors...
-/*
-const playlists = [
-  { name: 'dnb', id: 1 },
-  { name: 'a really long name for a playlist this is!', id: 2 },
+
+const filepathsRaw = [
+  "pc:/c:/music/revival",
+  "pc:/c:/music/",
+  "mobile:/SD:/music/running",
+  "mobile:/SD:/music/electronic",
 ];
-*/
 
 function trimSlashes(data) {
   let startIndex = 0;
@@ -28,26 +31,6 @@ function convertPlaylistData(data) {
   const result = { name: 'playlists', children: dataMap };
   return result;
 }
-
-/*
-const filepathsRaw = [
-  "pc:/c:/music/dnb",
-  "pc:/c:/music/garage",
-  "pc:/D:/downloads/library2",
-  "pc:/D:/downloads/electronic",
-  "mobile:/SD:/music/running",
-  "mobile:/SD:/music/electronic",
-];
-
-const filepathsRaw2 = [
-  "xpc:/xc:/xmusic/xdnb",
-  "xpc:/xc:/xmusic/xgarage",
-  "xpc:/D:/downloads/library2",
-  "xpc:/D:/downloads/electronic",
-  "xmobile:/SD:/xmusic/running",
-  "xmobile:/SD:/xmusic/electronic",
-];
-*/
 
 function convertRawFilepaths(pdata, depth) {
   if (depth > 60) {
@@ -105,45 +88,59 @@ async function post(endpoint, body) {
   });
 }
 
-
-async function onPlaylistDeleted(playlist) {
-  console.log("on playlist deleted", playlist);
-  const res = await post('/removeplaylist', playlist);
-  console.log(res);
-}
-
-async function onPlaylistUpdated(playlist) {
-  console.log("on playlist updated", playlist);
-  if (playlist.color === "") { playlist.color = null; }
-  if (playlist.name === "") { playlist.name = null; }
-  playlist.icon = null; // TODO: consolidate icon, or make it so we only display icon if it isn't ""
-
-  if (playlist.id >= 0) { // we need to update
-    const res = await post("/updateplaylist", playlist);
-    console.log(res);
-  } else { // we need to create a new playlist
-    const res = await post("/playlist", playlist);
-    console.log(res);
-  }
-}
-
 class TrackTreeContainer extends Component {
   constructor(props) {
     super(props);
+    this.onPlaylistDeleted = this.onPlaylistDeleted.bind(this);
+    this.onPlaylistUpdated = this.onPlaylistUpdated.bind(this);
     this.state = { filePathData: [] };
   }
 
-
   async componentWillMount() {
-    try {
-      const paths = await fetch('/paths', { method: "GET", credentials: 'include' });
-      const pathsFromJSON = await paths.json();
-      const pathArray = pathsFromJSON.map(n => trimSlashes(`(${n.did}) ${n.path}`).replace(/\\/g, "/"));
-      const r = convertRawFilepaths(pathArray, 0);
+    if (!this.props.tourActive) {
+      try {
+        const paths = await fetch('/paths', { method: "GET", credentials: 'include' });
+        const pathsFromJSON = await paths.json();
+        const pathArray = pathsFromJSON.map(n => trimSlashes(`(${n.did}) ${n.path}`).replace(/\\/g, "/"));
+        const r = convertRawFilepaths(pathArray, 0);
+        r.forEach((x) => { fillTreeWithData(x, ''); });
+        this.setState({ filePathData: r });
+      } catch (e) {
+        console.log("Couldn't load tracks", e);
+      }
+    } else {
+      const r = convertRawFilepaths(filepathsRaw, 0);
       r.forEach((x) => { fillTreeWithData(x, ''); });
       this.setState({ filePathData: r });
-    } catch (e) {
-      console.log("Couldn't load tracks", e);
+    }
+  }
+
+  async onPlaylistDeleted(playlist) {
+    if (this.props.tourActive) {
+      this.props.dispatch(showMessage("With an account this removes the playlist."));
+      return;
+    }
+    console.log("on playlist deleted", playlist);
+    const res = await post('/removeplaylist', playlist);
+    console.log(res);
+  }
+
+  async onPlaylistUpdated(playlist) {
+    if (this.props.tourActive) {
+      this.props.dispatch(showMessage("With an account this updates the playlist."));
+      return;
+    }
+
+    console.log("on playlist updated", playlist);
+    if (playlist.color === "") { playlist.color = null; }
+    if (playlist.name === "") { playlist.name = null; }
+    playlist.icon = null; // TODO: consolidate icon, or make it so we only display icon if it isn't ""
+    if (playlist.id >= 0) { // we need to update
+      const res = await post("/updateplaylist", playlist);
+      console.log(res);
+    } else { // we need to create a new playlist
+      const res = await post("/playlist", playlist);
+      console.log(res);
     }
   }
 
@@ -155,9 +152,9 @@ class TrackTreeContainer extends Component {
     return (
       <div style={{ overflow: 'auto', maxHeight: '90vh', minWidth: '100px' }}> <Tree
         data={data}
-        onPlaylistDeleted={onPlaylistDeleted}
+        onPlaylistDeleted={this.onPlaylistDeleted}
         onPathSelectionChange={this.props.onPathSelectionChange}
-        onPlaylistUpdated={onPlaylistUpdated}
+        onPlaylistUpdated={this.onPlaylistUpdated}
       />
       </div>);
   }
@@ -170,6 +167,8 @@ TrackTreeContainer.defaultProps = {
 TrackTreeContainer.propTypes = {
   onPathSelectionChange: PropTypes.func.isRequired,
   playlistData: PropTypes.arrayOf(PropTypes.object),
+  tourActive: PropTypes.bool.isRequired,
+  dispatch: PropTypes.func.isRequired,
 };
 
-export default TrackTreeContainer;
+export default connect(store => ({ tourActive: store.youtube.tourActive }))(TrackTreeContainer);

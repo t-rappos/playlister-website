@@ -3,30 +3,6 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
-/*
-
-const HeaderEdit = () => (
-  <div style={{ display: "inline", paddingLeft: "20px", float: "right", color: 'rgba(0,0,0,0.5)' }}>
-    <div onClick={()=>{console.log("edit")}} style={{ display: "inline" }}><i className="fa fa-edit" /></div>
-    <div onClick={()=>{console.log("delete")}} style={{ display: "inline", marginLeft: '4px' }}><i className="fa fa-times-rectangle" /></div>
-  </div>
-);
-
-
-const Header = ({ node, style }) => (
-  <div style={style.base}>
-    <div style={style.title}>
-      {node.name} {(node.playlistId !== undefined) ? HeaderEdit() : ""}
-    </div>
-  </div>
-);
-Header.propTypes = {
-  style: PropTypes.object,
-  node: PropTypes.object.isRequired,
-};
-
-*/
-// <input type="text">
 class EditText extends Component {
   constructor() {
     super();

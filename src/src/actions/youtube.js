@@ -33,3 +33,13 @@ export function requestPreviousTrack() {
 export function requestNextTrack() {
   return { type: "REQUEST_NEXT_TRACK" };
 }
+
+// add function for SESSION ACTIVE
+
+export function setSessionActive(value) {
+  return { type: "SESSION_ACTIVE", payload: value };
+}
+
+export function showMessage(message) {
+  return { type: "SET_MESSAGE_BAR_CONTENT", payload: message };
+}

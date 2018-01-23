@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-
+const compression = require('compression');
 const passport = require('passport');
 const { Strategy } = require('passport-local');
 const { BasicStrategy } = require('passport-http');
@@ -9,6 +9,7 @@ const dbApi = require('./db/db_api.js');
 // var db = require('./db');
 // var bcrypt = require('bcrypt');
 
+console.log("NODE_ENV", process.env);
 
 passport.use(new Strategy(dbApi.authenticateUser));
 passport.use(new BasicStrategy(dbApi.authenticateUser));
@@ -21,6 +22,7 @@ passport.serializeUser((user, cb) => {
 passport.deserializeUser(dbApi.passportDeserializeUser);
 
 const app = express();
+app.use(compression());
 
 // Use application-level middleware for common functionality, including
 // logging, parsing, and session handling.
@@ -62,18 +64,18 @@ app.get(
     },
 );
 
-async function handleDbError(fn) {
-    try {
-        await fn();
-    } catch (e) {
-        console.error(e);
-        res.send(404, 'Oops something went');
-    }
-}
+// will return ok if user has valid session
+app.get(
+    '/me',
+    isLoggedIn,
+    async (req, res) => {
+        res.send(200, 'Ok');
+    },
+);
 
 app.post('/playlist', isLoggedIn, async (req, res) => {
     const { name, color, icon } = req.body;
-    const result = await dbApi.addPlaylist(req.user.id, name, color, icon);
+    await dbApi.addPlaylist(req.user.id, name, color, icon);
     res.send(200, 'Ok');
 });
 

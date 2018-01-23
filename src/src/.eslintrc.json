@@ -5,7 +5,7 @@
         "browser": true
     },
     "rules": {
-        "linebreak-style" : 1,
+        "linebreak-style" :  [0, "windows"],
         "no-param-reassign" : 1,
         "react/forbid-prop-types": 1,
         "no-nested-ternary" : 1,

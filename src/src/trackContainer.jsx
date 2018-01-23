@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Segment } from 'semantic-ui-react';
+import PropTypes from 'prop-types';
 import fetch from "isomorphic-fetch";
 import './App.css';
 import TrackTable from './trackTable';
+import { showMessage } from "./actions/youtube";
 import TrackYoutubeDisplay from './trackYoutubeDisplay';
 import TrackTreeContainer from './tree/trackTreeContainer';
 
@@ -29,6 +31,76 @@ function checkNextTrackValid(youtubeId, ptitle, palbum, partist) {
 }
 */
 
+const defaultTracks = [
+  {
+    album: "Revival",
+    artist: "Eminem",
+    dataIndex: 0,
+    devices: "1", // "1, 2",
+    filenames: "track1.mp3",
+    filesize: 8378413,
+    hash: "581375b385f398715235ca880f8430a1",
+    id: 1,
+    paths: "/pc:/c:/music/revival",
+    playlistids: "1",
+    selected: false,
+    title: "Believe",
+    youtubeId: "8RrQgG6RDkQ",
+  },
+  {
+    album: "Jazz Classics",
+    artist: "John Coltrane",
+    dataIndex: 1,
+    devices: "1", // "1, 2",
+    filenames: "BlueTrain.mp3",
+    filesize: 8328413,
+    hash: "581375b385f398715235ca880f8430a2",
+    id: 2,
+    paths: "/pc:/c:/music",
+    playlistids: "1",
+    selected: false,
+    title: "Blue train",
+    youtubeId: "XpZHUVjQydI",
+  },
+  {
+    album: "÷",
+    artist: "Ed Sheeran",
+    dataIndex: 2,
+    devices: "2", // "1, 2",
+    filenames: "eraser.mp3",
+    filesize: 8328413,
+    hash: "581375b385f398715235ca880f8430a2",
+    id: 3,
+    paths: "/mobile:/SD:/music/running",
+    playlistids: "1",
+    selected: false,
+    title: "Eraser",
+    youtubeId: "OjGrcJ4lZCc",
+  },
+  {
+    album: "Daft Punk - Greatest Hits",
+    artist: "Daft Punk",
+    dataIndex: 3,
+    devices: "1, 2", // "1, 2",
+    filenames: "aroundTheWorld.mp3",
+    filesize: 8328413,
+    hash: "581375b385f398715235ca880f8430a2",
+    id: 4,
+    paths: "/mobile:/SD:/music/electronic, /pc:/c:/music/",
+    playlistids: "2",
+    selected: false,
+    title: "Around the World",
+    youtubeId: "yca6UsllwYs",
+  },
+];
+
+
+const defaultPlaylists = [
+  { name: 'My Favorites', id: 1 },
+  { name: 'Need to delete these', id: 2 },
+];
+
+
 class TrackContainer extends Component {
   constructor() {
     super();
@@ -46,6 +118,13 @@ class TrackContainer extends Component {
 
     let playlists = [];
     let tracks = [];
+
+    if (this.props.tourActive) {
+      tracks = defaultTracks;
+      playlists = defaultPlaylists;
+      this.setState({ tracks, playlists });
+      return;
+    }
 
     try {
       const playlistsf = await fetch('/playlists', { method: "GET", credentials: 'include' });
@@ -76,6 +155,10 @@ class TrackContainer extends Component {
   }
 
   async onDropDownSelect(tagId, dataIndex) {
+    if (this.props.tourActive) {
+      this.props.dispatch(showMessage("With an account this would tag all selected tracks with the chosen playlist."));
+      return;
+    }
     const selectedTracks = getSelectedTracks(this.state.tracks);
     if (selectedTracks.length === 0) {
       await fetch('/toggleplaylisttracks', { // TODO: extract post out
@@ -158,4 +241,9 @@ class TrackContainer extends Component {
   }
 }
 
-export default connect(store => ({ user: store.user }))(TrackContainer);
+TrackContainer.propTypes = {
+  tourActive: PropTypes.bool.isRequired,
+  dispatch: PropTypes.func.isRequired,
+};
+
+export default connect(store => ({ tourActive: store.youtube.tourActive }))(TrackContainer);
