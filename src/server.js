@@ -302,24 +302,37 @@ app.get('/logout', (req, res) => {
     */
 });
 
+/*
+
 app.post(
     '/login',
-    passport.authenticate('local'),
+    passport.authenticate('local', {
+        successRedirect: '/main',
+        failureRedirect: '/failed', // see text
+        failureFlash: true, // optional, see text as well
+    }),
     (req, res) => {
         req.login(req.user, () => {
             console.log("logged in");
             res.redirect('/main');
             // return res.send('Login successful');
+        }).catch((e) => {
+            console.log(e);
+            res.redirect('/');
         });
     },
 );
+
+*/
+
+app.post('/login', (req, res) => passport.authenticate('local', { successRedirect: '/main', failureRedirect: '/' })(req, res));
 
 app.post('/register', (req, res) => {
     // TODO: think about moving DB calls out of this file.
     dbApi.createUser(req.body.username, req.body.password, req.body.email)
         .then(() => {
             console.log('created registered account');
-            res.redirect('/login');
+            res.redirect('/');
         })
         .catch((e) => {
             console.log(e);
@@ -333,17 +346,17 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(`${__dirname}/build/index.html`));
 });
 
-app.get('*.js', function (req, res, next) {
-    req.url = req.url + '.gz';
+app.get('*.js', (req, res, next) => {
+    req.url += '.gz';
     res.set('Content-Encoding', 'gzip');
     next();
-  });
+});
 
-  app.get('*.jsx', function (req, res, next) {
-    req.url = req.url + '.gz';
+app.get('*.jsx', (req, res, next) => {
+    req.url += '.gz';
     res.set('Content-Encoding', 'gzip');
     next();
-  });
+});
 
 app.listen(process.env.PORT || 8080);
 
