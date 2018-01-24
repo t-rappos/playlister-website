@@ -8,7 +8,7 @@ import TrackContainer from './trackContainer';
 import Footer from './common/footer';
 
 
-class MainPage extends Component {
+class TourPage extends Component {
   constructor(props) {
     super(props);
     this.backHandler = this.backHandler.bind(this);
@@ -78,7 +78,7 @@ class MainPage extends Component {
   }
 }
 
-MainPage.propTypes = {
+TourPage.propTypes = {
   sessionActive: PropTypes.bool.isRequired,
   dispatch: PropTypes.func.isRequired,
   messageBarContent: PropTypes.string.isRequired,
@@ -89,5 +89,5 @@ export default connect(store => ({
   sessionActive: store.youtube.sessionActive,
   messageBarContent: store.youtube.messageBarContent,
   messageBarVisible: store.youtube.messageBarVisible,
-}))(MainPage);
+}))(TourPage);
 

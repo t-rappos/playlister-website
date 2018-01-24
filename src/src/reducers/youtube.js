@@ -31,7 +31,12 @@ export default function reducer(state = youtubeReducerInitialState, action) {
     state = { ...state, sessionActive: action.payload, tourActive: false };
     return state;
   case "START_TOUR":
-    state = { ...state, tourActive: true, sessionActive: false };
+    state = {
+      ...state,
+      tourActive: true,
+      sessionActive: false,
+      messageBarVisible: false,
+    };
     return state;
   case "SET_MESSAGE_BAR_CONTENT":
     state = { ...state, messageBarContent: action.payload, messageBarVisible: true };
