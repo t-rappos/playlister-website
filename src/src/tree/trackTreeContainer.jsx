@@ -106,7 +106,7 @@ class TrackTreeContainer extends Component {
         r.forEach((x) => { fillTreeWithData(x, ''); });
         this.setState({ filePathData: r });
       } catch (e) {
-        console.log("Couldn't load tracks", e);
+        // console.log("Couldn't load tracks", e);
       }
     } else {
       const r = convertRawFilepaths(filepathsRaw, 0);
@@ -120,9 +120,7 @@ class TrackTreeContainer extends Component {
       this.props.dispatch(showMessage("With an account this removes the playlist."));
       return;
     }
-    console.log("on playlist deleted", playlist);
-    const res = await post('/removeplaylist', playlist);
-    console.log(res);
+    await post('/removeplaylist', playlist);
   }
 
   async onPlaylistUpdated(playlist) {
@@ -130,17 +128,13 @@ class TrackTreeContainer extends Component {
       this.props.dispatch(showMessage("With an account this updates the playlist."));
       return;
     }
-
-    console.log("on playlist updated", playlist);
     if (playlist.color === "") { playlist.color = null; }
     if (playlist.name === "") { playlist.name = null; }
     playlist.icon = null; // TODO: consolidate icon, or make it so we only display icon if it isn't ""
     if (playlist.id >= 0) { // we need to update
-      const res = await post("/updateplaylist", playlist);
-      console.log(res);
+      await post("/updateplaylist", playlist);
     } else { // we need to create a new playlist
-      const res = await post("/playlist", playlist);
-      console.log(res);
+      await post("/playlist", playlist);
     }
   }
 

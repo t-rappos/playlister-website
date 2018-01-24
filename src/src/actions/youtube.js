@@ -8,18 +8,14 @@ async function findYoutubeId(hash) {
       if (data && data.youtubeTrackId) {
         return data.youtubeTrackId;
       }
-      console.log("couldnt get json data from result", result);
-    } else {
-      console.log("couldnt find track with hash");
     }
   } catch (e) {
-    console.log(e);
+    // console.log(e);
   }
   return false;
 }
 
 export function setYoutubeId(id, hash) {
-  console.log("setYoutubeId", id, hash);
   if (id) {
     return { type: "SET_YOUTUBE_ID", payload: id };
   }

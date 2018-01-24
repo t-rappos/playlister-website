@@ -22,11 +22,9 @@ function makeColumns(_this) {
           Header: "Play",
           id: 'playButton',
           Cell: row => (<RowPlayButton onClick={() => {
-            console.log(row);
             const { pageSize, page } = row;
             let { viewIndex } = row;
             viewIndex += (pageSize * page);
-            console.log("set view index", viewIndex);
             _this.setState({ lastClickedRow: viewIndex });
             _this.props.dispatch(setYoutubeId(row.row.YoutubeId, row.row.hash));
           }}
@@ -122,7 +120,6 @@ function makeColumns(_this) {
           id: 'tagsDropDown',
           Cell: row => (<RowTagsDropDown
             onSelection={(tagId) => {
-              console.log(tagId, " was clicked");
               _this.props.onDropDownSelect(tagId, row.original.dataIndex);
             }}
             tagNames={_this.props.playlistData.map(p => p.name)}
@@ -163,22 +160,17 @@ class TrackTable extends Component {
     if (this.state.lastClickedRow >= 0) {
       let viewIndex = this.state.lastClickedRow;
       if (nextProps.nextTrackRequested) {
-        console.log("next track requested");
         if (viewIndex === this.state.resolvedData.length - 1) { viewIndex = -1; }
         viewIndex += 1;
         const nextRow = this.state.resolvedData[viewIndex];
         const { YoutubeId, hash } = nextRow;
-        console.log("Going to next track ", nextRow, YoutubeId, hash);
         this.setState({ lastClickedRow: viewIndex });
         this.props.dispatch(setYoutubeId(YoutubeId, hash));
       } else if (nextProps.previousTrackRequested) {
-        console.log("prev track requested");
         if (viewIndex === 0) { viewIndex = this.state.resolvedData.length; }
         viewIndex -= 1;
         const nextRow = this.state.resolvedData[viewIndex];
-        console.log("viewIndex, nextRow", viewIndex, nextRow);
         const { YoutubeId, hash } = nextRow;
-        console.log("Going to prev track ", nextRow, YoutubeId, hash);
         this.setState({ lastClickedRow: viewIndex });
         this.props.dispatch(setYoutubeId(YoutubeId, hash));
       }
@@ -186,13 +178,10 @@ class TrackTable extends Component {
   }
 
   render() {
-    console.log("render tracktable");
-
     const filterValue = this.props.selectionData.path || this.props.selectionData.playlistId || "paths";
     const filterId = this.props.selectionData.path ? "paths" :
       (this.props.selectionData.playlistId ? "playlistIds" : "");
     const filterConditions = [{ id: filterId, value: `${filterValue}` }];
-    console.log('filter', filterConditions);
 
     const RT = (this.props.selectionData === []
       || (!this.props.selectionData.path && !this.props.selectionData.playlistId))
@@ -200,7 +189,6 @@ class TrackTable extends Component {
       (<ReactTable
         getTdProps={tableState => ({ // rowInfo
           onClick: (e, handleOriginal) => {
-            console.log("tableState", tableState);
             this.setState({ resolvedData: tableState.sortedData });
             if (handleOriginal) {
               handleOriginal();
@@ -222,7 +210,6 @@ class TrackTable extends Component {
       (<ReactTable
         getTdProps={tableState => ({
           onClick: (e, handleOriginal) => {
-            console.log("tableState", tableState);
             this.setState({ resolvedData: tableState.sortedData });
             if (handleOriginal) {
               handleOriginal();

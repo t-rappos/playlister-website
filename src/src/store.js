@@ -1,7 +1,7 @@
 /* eslint no-underscore-dangle:0 */
 
 import { applyMiddleware, createStore, compose } from "redux";
-import { createLogger } from 'redux-logger';
+// import { createLogger } from 'redux-logger';
 import thunk from 'redux-thunk';
 import promiseMiddleware from 'redux-promise-middleware';
 import reducers from "./reducers";
@@ -13,6 +13,6 @@ const composeEnhancers =
 
     }) : compose;
 
-const enhancer = composeEnhancers(applyMiddleware(promiseMiddleware(), thunk, createLogger()));
+const enhancer = composeEnhancers(applyMiddleware(promiseMiddleware(), thunk /* createLogger() */));
 
 export default createStore(reducers, enhancer);

@@ -3,35 +3,29 @@ import PropTypes from 'prop-types';
 import YouTube from 'react-youtube';
 import { Button, Grid } from 'semantic-ui-react';
 import { connect } from 'react-redux';
-
 import { requestPreviousTrack, requestNextTrack } from './actions/youtube';
-
 
 class TrackYoutubeDisplay extends Component {
   componentDidMount() {
     this.onStateChange = this.onStateChange.bind(this);
-    // this.checkYTID = this.checkYTID.bind(this);
   }
 
-  // onReady(event) {
-  //   // access to player in all event handlers via event.target
-  //   //event.target.pauseVideo();
-  //   //console.log("onReady ", event, this.onReady);
-  // }
-
   onStateChange(event) {
-    console.log("state change", event);
     if (event && event.data === 0) {
-      // trigger callback
-      console.log("Going to next track");
       this.props.dispatch(requestNextTrack());
     }
   }
 
   render() {
+    let width = 640;
+    let height = 390;
+    if (this.props.windowInnerWidth < 850) {
+      width = Math.min(this.props.windowInnerWidth, this.props.windowOuterWidth);
+      height = width * (390 / 640);
+    }
     const opts = {
-      height: '390',
-      width: '640',
+      height,
+      width,
       playerVars: { // https://developers.google.com/youtube/player_parameters
         autoplay: 1,
       },
@@ -40,30 +34,60 @@ class TrackYoutubeDisplay extends Component {
       (<YouTube
         videoId={this.props.youtubeId}
         opts={opts}
-        onReady={this.onReady}
         onStateChange={this.onStateChange}
       />) :
-      (<div style={{ height: '390px', width: '640px' }} />);
-    return (
-      <div>
-        <Grid>
-          <div className="two wide column">
+      (<div style={{ height, width }} />);
+
+    const makeWideContent = () => (
+      <React.Fragment>
+        <div className="two wide column">
+          <Button
+            onClick={() => { this.props.dispatch(requestPreviousTrack()); }}
+          >
+            Previous Track
+          </Button>
+        </div>
+        <div className="twelve wide column" style={{ minHeight: height, minWidth: width }}>
+          {YT}
+        </div>
+        <div className="two wide column">
+          <Button
+            onClick={() => { this.props.dispatch(requestNextTrack()); }}
+          >
+          Next Track
+          </Button>
+        </div>
+      </React.Fragment>
+    );
+
+    const makeNarrowContent = () => (
+      <React.Fragment>
+        <Grid.Row style={{ padding: "10px" }}>
+          {YT}
+        </Grid.Row>
+        <Grid.Row columns={2}>
+          <Grid.Column>
             <Button
               onClick={() => { this.props.dispatch(requestPreviousTrack()); }}
             >
-                Previous Track
+              Previous Track
             </Button>
-          </div>
-          <div className="twelve wide column" style={{ minHeight: '390px', minWidth: '640px' }}>
-            {YT}
-          </div>
-          <div className="two wide column">
+          </Grid.Column>
+          <Grid.Column>
             <Button
               onClick={() => { this.props.dispatch(requestNextTrack()); }}
             >
-              Next Track
+            Next Track
             </Button>
-          </div>
+          </Grid.Column>
+        </Grid.Row>
+      </React.Fragment>
+    );
+
+    return (
+      <div>
+        <Grid>
+          {this.props.windowInnerWidth > 850 ? makeWideContent() : makeNarrowContent()}
         </Grid>
       </div>
     );
@@ -77,22 +101,12 @@ TrackYoutubeDisplay.defaultProps = {
 TrackYoutubeDisplay.propTypes = {
   youtubeId: PropTypes.string,
   dispatch: PropTypes.func.isRequired,
+  windowInnerWidth: PropTypes.number.isRequired,
+  windowOuterWidth: PropTypes.number.isRequired,
 };
 
-export default connect(store => ({ youtubeId: store.youtube.youtubeId }))(TrackYoutubeDisplay);
-
-
-// check for "" youtube search term
-/*
-  checkYTID(ytid){
-    //"" search term youtube id. TODO: this may change over time... ensure DB never populates null search term!
-    console.log("Comparing ",'2Vv-BfVoq4g',ytid );
-    if(ytid === '2Vv-BfVoq4g'){
-      console.log("Skipping null youtube search result");
-      this.props.nextTrackCallback();
-      console.log("Skipped null youtube search result");
-      return null;
-    } else {
-      return ytid;
-    }
-  } */
+export default connect(store => ({
+  youtubeId: store.youtube.youtubeId,
+  windowInnerWidth: store.youtube.windowInnerWidth,
+  windowOuterWidth: store.youtube.windowOuterWidth,
+}))(TrackYoutubeDisplay);

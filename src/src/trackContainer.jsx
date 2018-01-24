@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Segment } from 'semantic-ui-react';
+import { Segment, Tab } from 'semantic-ui-react';
 import PropTypes from 'prop-types';
 import fetch from "isomorphic-fetch";
 import './App.css';
@@ -9,27 +9,9 @@ import { showMessage } from "./actions/youtube";
 import TrackYoutubeDisplay from './trackYoutubeDisplay';
 import TrackTreeContainer from './tree/trackTreeContainer';
 
-// const NULL_SEARCH_TERM = '2Vv-BfVoq4g'; // TODO: update this automatically?
-
 function getSelectedTracks(tracks) {
   return tracks.filter(t => t.selected === true);
 }
-
-// TODO: remove this or use it in trackTable.
-/*
-function checkNextTrackValid(youtubeId, ptitle, palbum, partist) {
-  if (!!youtubeId && youtubeId === NULL_SEARCH_TERM) { console.log("checkNextTrackValid: null search term"); return false; }
-  let title = ptitle;
-  let album = palbum;
-  let artist = partist;
-  if (title) { title = title.trim(); }
-  if (album) { album = album.trim(); }
-  if (artist) { artist = artist.trim(); }
-  if (!title && !album && !artist) { console.log("checkNextTrackValid:  3 null"); return false; }
-  if (!album && !title) { console.log("checkNextTrackValid: 2 null"); return false; }
-  return true;
-}
-*/
 
 const defaultTracks = [
   {
@@ -131,7 +113,7 @@ class TrackContainer extends Component {
       playlists = await playlistsf.json();
       playlists = playlists.filter(p => !!p.name);
     } catch (e) {
-      console.log("Couldn't load playlists", e);
+      // console.log("Couldn't load playlists", e);
     }
 
     try {
@@ -143,7 +125,7 @@ class TrackContainer extends Component {
         t.selected = false;
       });
     } catch (e) {
-      console.log("Couldn't load tracks", e);
+      // console.log("Couldn't load tracks", e);
     }
     this.setState({ tracks, playlists });
   }
@@ -151,7 +133,7 @@ class TrackContainer extends Component {
   onSelection(index, value) {
     const ns = this.state.tracks;
     ns[index].selected = value;
-    this.setState({ tracks: ns }, () => { console.log("set new state"); });
+    this.setState({ tracks: ns });
   }
 
   async onDropDownSelect(tagId, dataIndex) {
@@ -191,12 +173,13 @@ class TrackContainer extends Component {
         t.selected = false;
       });
     } catch (e) {
-      console.log("Couldn't load tracks", e);
+      // console.log("Couldn't load tracks", e);
     }
     this.setState({ tracks });
   }
 
   onPathSelectionChange(selectionData) {
+    this.props.dispatch({ type: "SET_TAB_INDEX", payload: 1 });
     if (selectionData.path) {
       const op = selectionData.path;
       let s = op.substr(op.indexOf(")") + 1, (op.length - op.indexOf(")")) + 1);
@@ -205,6 +188,8 @@ class TrackContainer extends Component {
     }
     this.setState({ selectionData });
   }
+
+  handleTabChange = (e, { activeIndex }) => this.props.dispatch({ type: "SET_TAB_INDEX", payload: activeIndex })
 
   render() {
     const Tree = (<TrackTreeContainer
@@ -221,7 +206,25 @@ class TrackContainer extends Component {
       style={{ margin: "auto" }}
     />);
 
-    return (
+    const panes = [
+      { menuItem: 'My Folders', render: () => <Tab.Pane>{Tree}</Tab.Pane> },
+      { menuItem: 'My Tracks', render: () => <Tab.Pane>{Table}</Tab.Pane> },
+    ];
+
+    const makeNarrowContent = () => (
+      <div>
+        <Segment.Group>
+          <Segment vertical>
+            <TrackYoutubeDisplay />
+          </Segment>
+          <Segment vertical>
+            <Tab panes={panes} activeIndex={this.props.tabIndex} onTabChange={this.handleTabChange} />
+          </Segment>
+        </Segment.Group>
+      </div>
+    );
+
+    const makeWideContent = () => (
       <div>
         <Segment.Group horizontal>
           <Segment style={{ maxWidth: '400px', minWidth: '150px' }}>
@@ -238,12 +241,24 @@ class TrackContainer extends Component {
         </Segment.Group>
       </div>
     );
+
+    return (
+      <div>
+        {this.props.windowWidth < 850 ? makeNarrowContent() : makeWideContent()}
+      </div>
+    );
   }
 }
 
 TrackContainer.propTypes = {
   tourActive: PropTypes.bool.isRequired,
   dispatch: PropTypes.func.isRequired,
+  windowWidth: PropTypes.number.isRequired,
+  tabIndex: PropTypes.number.isRequired,
 };
 
-export default connect(store => ({ tourActive: store.youtube.tourActive }))(TrackContainer);
+export default connect(store => ({
+  tourActive: store.youtube.tourActive,
+  windowWidth: store.youtube.windowInnerWidth,
+  tabIndex: store.youtube.activeTabIndex,
+}))(TrackContainer);

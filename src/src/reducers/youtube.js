@@ -7,42 +7,59 @@ const youtubeReducerInitialState = {
   tourActive: false,
   messageBarContent: "",
   messageBarVisible: true,
+  windowInnerWidth: window.innerWidth,
+  windowOuterWidth: window.outerWidth,
+  activeTabIndex: 1,
 };
 
-export default function reducer(state = youtubeReducerInitialState, action) {
+export default function reducer(oldState = youtubeReducerInitialState, action) {
+  let state = oldState;
   switch (action.type) {
   case "SET_YOUTUBE_ID":
     state = {
-      ...state, youtubeId: action.payload, nextTrackRequested: false, previousTrackRequested: false,
+      ...oldState, youtubeId: action.payload, nextTrackRequested: false, previousTrackRequested: false,
     };
     return state;
   case "SET_YOUTUBE_ID_FULFILLED":
     state = {
-      ...state, youtubeId: action.payload, nextTrackRequested: false, previousTrackRequested: false,
+      ...oldState, youtubeId: action.payload, nextTrackRequested: false, previousTrackRequested: false,
     };
     return state;
   case "REQUEST_NEXT_TRACK":
-    state = { ...state, nextTrackRequested: true };
+    state = { ...oldState, nextTrackRequested: true };
     return state;
   case "REQUEST_PREVIOUS_TRACK":
-    state = { ...state, previousTrackRequested: true };
+    state = { ...oldState, previousTrackRequested: true };
     return state;
   case "SESSION_ACTIVE":
-    state = { ...state, sessionActive: action.payload, tourActive: false };
+    state = { ...oldState, sessionActive: action.payload, tourActive: false };
     return state;
   case "START_TOUR":
     state = {
-      ...state,
+      ...oldState,
       tourActive: true,
       sessionActive: false,
       messageBarVisible: false,
     };
     return state;
   case "SET_MESSAGE_BAR_CONTENT":
-    state = { ...state, messageBarContent: action.payload, messageBarVisible: true };
+    state = { ...oldState, messageBarContent: action.payload, messageBarVisible: true };
     return state;
   case "DISMISS_MESSAGE":
-    state = { ...state, messageBarContent: "", messageBarVisible: false };
+    state = { ...oldState, messageBarContent: "", messageBarVisible: false };
+    return state;
+  case "SET_WINDOW_WIDTH":
+    state = {
+      ...oldState,
+      windowInnerWidth: action.payload.windowInnerWidth,
+      windowOuterWidth: action.payload.windowOuterWidth,
+    };
+    return state;
+  case "SET_TAB_INDEX":
+    state = {
+      ...oldState,
+      activeTabIndex: action.payload,
+    };
     return state;
   default:
     return state;

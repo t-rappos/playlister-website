@@ -9,7 +9,7 @@ const MakeSelectItem = (name, id, selected) => {
 
 const RowTagsDropDown = props => (
   <div>
-    <select name="text" onChange={(e) => { console.log(e.target.value); props.onSelection(e.target.value); }}>
+    <select name="text" onChange={(e) => { props.onSelection(e.target.value); }}>
       <option value="">...</option>
       {props.tagNames.map((tagName, index) => MakeSelectItem(
         tagName,

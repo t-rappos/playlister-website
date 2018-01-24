@@ -19,7 +19,7 @@ Access and play all your music from anywhere.`;
 const heading3 = "Organize your music";
 
 const msg3x = (
-  <ul style={{ listStylePosition: "inside" }}>
+  <ul style={{ listStylePosition: "inside", fontSize: '1.33em' }}>
     <li>Search for your music or view them in the file explorer view.</li>
     <li>Label and sort your music into playlists.</li>
     <li>See which devices your tracks and stored on.</li>
@@ -32,7 +32,7 @@ const msg4 = `Scan your devices to be able to view all your music online.`;
 /* eslint react/jsx-curly-brace-presence:0 */
 const heading5 = "Upcoming features";
 const msg5x = (
-  <ul>
+  <ul style={{ fontSize: '1.33em' }}>
     <li>{`Automatically delete music on devices that are in a 'to delete' playlist. Each device can delete tracks as labelled automatically.`}</li>
     <li>{`Help move music to other devices by labelling tracks with 'to move'. Each device will then gather the labelled tracks and move to a known location for easy trasferral to the new device. `}</li>
     <li>{`Public playlists, share your playlists with others`}</li>
@@ -104,14 +104,7 @@ class LandingPage extends Component {
               </Grid.Column>
 
               <Grid.Column floated="right" width={6}>
-                { /*
-                <Image
-                  bordered
-                  rounded
-                  size="large"
-                  src="/assets/images/wireframe/white-image.png"
-                /> */
-                }
+                {}
               </Grid.Column>
             </Grid.Row>
             <Grid.Row>
@@ -127,7 +120,7 @@ class LandingPage extends Component {
             <Grid.Row textAlign="center">
               <Grid.Column style={{ paddingBottom: '5em', paddingTop: '5em' }}>
                 <Header as="h3" style={{ fontSize: '2em' }}>{heading3}</Header>
-                <p style={{ fontSize: '1.33em' }}>{msg3x}</p>
+                {msg3x}
               </Grid.Column>
               <Grid.Column style={{ paddingBottom: '5em', paddingTop: '5em' }}>
                 <Header as="h3" style={{ fontSize: '2em' }}>{heading4}</Header>
@@ -139,24 +132,7 @@ class LandingPage extends Component {
         <Segment style={{ padding: '8em 0em' }} vertical>
           <Container text>
             <Header as="h3" style={{ fontSize: '2em' }}>{heading5}</Header>
-            <p style={{ fontSize: '1.33em' }}>{msg5x}</p>
-            {/*
-            <Button as="a" size="large">Read More</Button>
-            <Divider
-              as="h4"
-              className="header"
-              horizontal
-              style={{ margin: '3em 0em', textTransform: 'uppercase' }}
-            >
-              <a href="/case_studies">Case Studies</a>
-            </Divider> */}
-            {/* <Header as="h3" style={{ fontSize: '2em' }}>Did We Tell You About Our Bananas?</Header>
-            <p style={{ fontSize: '1.33em' }}>
-                Yes I know you probably disregarded the earlier boasts as non-sequitur filler content, but its really
-                true.
-                It took years of gene splicing and combinatory DNA research, but our bananas can really dance.
-            </p>
-            <Button as="a" size="large">Im Still Quite Interested</Button> */}
+            {msg5x}
           </Container>
         </Segment>
         <Footer />

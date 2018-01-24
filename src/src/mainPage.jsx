@@ -16,15 +16,13 @@ class MainPage extends Component {
 
   async logoutHandler(e) {
     e.preventDefault();
-    const logout = await fetch('/logout', { method: "GET", credentials: 'include' });
+    await fetch('/logout', { method: "GET", credentials: 'include' });
     this.props.dispatch({ type: "SESSION_ACTIVE", payload: false });
-    console.log("Logged out", logout);
     window.location.reload();
   }
 
   render() {
     if (!this.props.sessionActive) {
-      console.log("this.props.sessionActive", this.props.sessionActive);
       return (<Redirect to="/" />);
     }
 
