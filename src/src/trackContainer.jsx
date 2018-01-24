@@ -97,6 +97,7 @@ class TrackContainer extends Component {
     this.onPathSelectionChange = this.onPathSelectionChange.bind(this); // a folder is selected in tree view
     this.onSelection = this.onSelection.bind(this); // a file is selected in list view
     this.onDropDownSelect = this.onDropDownSelect.bind(this);
+    this.handleTabChange = this.handleTabChange.bind(this);
 
     let playlists = [];
     let tracks = [];
@@ -189,7 +190,7 @@ class TrackContainer extends Component {
     this.setState({ selectionData });
   }
 
-  handleTabChange = (e, { activeIndex }) => this.props.dispatch({ type: "SET_TAB_INDEX", payload: activeIndex })
+  handleTabChange(e, { activeIndex }) { this.props.dispatch({ type: "SET_TAB_INDEX", payload: activeIndex }); }
 
   render() {
     const Tree = (<TrackTreeContainer
