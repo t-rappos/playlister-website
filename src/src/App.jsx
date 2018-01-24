@@ -11,6 +11,10 @@ import LandingPage from "./landingPage";
 import TourPage from "./tourPage";
 import store from "./store";
 
+function handleWindowSizeChange() {
+  store.dispatch({ type: "SET_WINDOW_WIDTH", payload: { windowInnerWidth: window.innerWidth, windowOuterWidth: window.outerWidth } });
+}
+
 class App extends Component {
   constructor() {
     super();
@@ -19,18 +23,14 @@ class App extends Component {
 
   // https://goshakkk.name/different-mobile-desktop-tablet-layouts-react/
   componentWillMount() {
-    window.addEventListener('resize', this.handleWindowSizeChange);
+    window.addEventListener('resize', handleWindowSizeChange);
   }
 
   // make sure to remove the listener
   // when the component is not mounted anymore
   componentWillUnmount() {
-    window.removeEventListener('resize', this.handleWindowSizeChange);
+    window.removeEventListener('resize', handleWindowSizeChange);
   }
-
-  handleWindowSizeChange = () => {
-    store.dispatch({ type: "SET_WINDOW_WIDTH", payload: { windowInnerWidth: window.innerWidth, windowOuterWidth: window.outerWidth } });
-  };
 
   render() {
     return (
