@@ -17,7 +17,7 @@ class TourPage extends Component {
     props.dispatch({ type: "START_TOUR" });
   }
 
-  handleDismiss = () => {
+  handleDismiss() {
     this.props.dispatch({ type: "DISMISS_MESSAGE" });
   }
 
