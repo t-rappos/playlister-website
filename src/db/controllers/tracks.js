@@ -23,6 +23,15 @@ async function getUniquePaths(userId) {
     return db.sequelize.query(query);
 }
 
+async function getTrackPathsForPlaylist(playlistId) {
+    const query = `SELECT path, hash, filename FROM device_tracks
+    INNER JOIN tracks ON device_tracks."trackId" = tracks.id
+    INNER JOIN playlist_tracks ON playlist_tracks."trackId" = tracks.id
+    WHERE playlist_tracks."playlistId" = ${playlistId};
+    `;
+    return db.sequelize.query(query);
+}
+
 async function getTracks(userId) {
     const query = `
     SELECT
@@ -285,5 +294,6 @@ module.exports = {
     removeTracksFromPlaylist, // (tracksIds, playlistId)
     togglePlaylistForTracks, // (trackIds, playlistId)
     getPlaylistsForUser,
-    getPlaylistTrackIds
+    getPlaylistTrackIds,
+    getTrackPathsForPlaylist,
 };

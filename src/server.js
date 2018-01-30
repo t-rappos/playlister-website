@@ -124,13 +124,22 @@ app.post('/toggleplaylisttracks', isLoggedIn, async (req, res) => {
     res.send(200, 'Ok');
 });
 
-app.get('/playlists', isLoggedIn, async (req, res) => {
+async function getPlaylistsForUser(req, res) {
     const result = await dbApi.getPlaylistsForUser(req.user.id);
     res.json(result);
-});
+}
+
+app.get('/playlists', isLoggedIn, getPlaylistsForUser);
+app.get('/mplaylists', passport.authenticate('basic', { session: false }), getPlaylistsForUser);
 
 app.get('/playlisttracks/:playlistId', isLoggedIn, async (req, res) => {
     const result = await dbApi.getPlaylistTrackIds(req.params.playlistId);
+    res.json(result);
+});
+
+/* get tracks (paths, filenames, hashes) for playlist */
+app.get('/mtracks/:playlistId', passport.authenticate('basic', { session: false }), async (req, res) => {
+    const result = await dbApi.getTrackPathsForPlaylist(req.params.playlistId);
     res.json(result);
 });
 
