@@ -140,7 +140,7 @@ app.get('/playlisttracks/:playlistId', isLoggedIn, async (req, res) => {
 /* get tracks (paths, filenames, hashes) for playlist */
 app.get('/mtracks/:playlistId', passport.authenticate('basic', { session: false }), async (req, res) => {
     const result = await dbApi.getTrackPathsForPlaylist(req.params.playlistId);
-    res.json(result);
+    res.json(result[0]);
 });
 
 /* GET register device */
