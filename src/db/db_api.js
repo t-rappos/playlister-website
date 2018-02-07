@@ -81,7 +81,7 @@ module.exports = {
     createUser,
     registerDevice,
     unregisterDevice,
-    addTracksToDevice: TrackController.addTracksToDevice,
+    addTracksToDevice: TrackController.addTracksToDevice, //TODO: can we use spread operator here?
     removeTracksFromDevice: TrackController.removeTracksFromDevice,
     getServerStatus,
     getTracks: TrackController.getTracks,

@@ -31,7 +31,7 @@ app.use(require('cookie-parser')());
 
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 app.use(bodyParser.json({ limit: '50mb' }));
-app.use(require('express-session')({ // TODO: put sectet in config file
+app.use(require('express-session')({ // TODO: put secret in config file
     secret: 'keyboard cat', resave: true, saveUninitialized: true, cookie: { secure: false },
 }));
 
@@ -283,56 +283,12 @@ app.get(
     },
 );
 
-
-/* GET users listing. */
-/*
-app.get('/users', (req, res) => {
-    res.json([{
-        id: 1,
-        username: "usrs",
-    }, {
-        id: 2,
-        username: "D0loresH4z11",
-    }]);
-});
-*/
-
-
 app.get('/logout', (req, res) => {
     req.logout();
     res.redirect('/');
     console.log(`destroyed session for ${req.user}`);
-    /*
-    console.log("destroying session for " + req.user);
-    req.session.destroy(() => {
-        console.log("destroyed session for " + req.user);
-        res.redirect('/');
-    });
-    */
 });
 
-/*
-
-app.post(
-    '/login',
-    passport.authenticate('local', {
-        successRedirect: '/main',
-        failureRedirect: '/failed', // see text
-        failureFlash: true, // optional, see text as well
-    }),
-    (req, res) => {
-        req.login(req.user, () => {
-            console.log("logged in");
-            res.redirect('/main');
-            // return res.send('Login successful');
-        }).catch((e) => {
-            console.log(e);
-            res.redirect('/');
-        });
-    },
-);
-
-*/
 
 app.post('/login', (req, res) => passport.authenticate('local', { successRedirect: '/main', failureRedirect: '/' })(req, res));
 
@@ -347,7 +303,6 @@ app.post('/register', (req, res) => {
             console.log(e);
         });
 });
-
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
