@@ -1,7 +1,9 @@
 # Technical Design Document
 
 ## Abstract
-This document is aiming to explain the static and dynamic structure of the systems architecture. Focus will be on explaining these details abstractly, and without much explanation in terms of implementation details e.g. programming language or frameworks.
+~~This document is aiming to explain the static and dynamic structure of the systems architecture. Focus will be on explaining these details abstractly, and without much explanation in terms of implementation details e.g. programming language or frameworks.~~
+
+As this document was created *after the fact* its main purpose is now to it to outline the static/dynamic structure of the front-end website and back-end server. 
 
 ## Problem Analysis
 
@@ -86,18 +88,18 @@ await fetch('/...', {
 ### Candidate Classes
 Note: The section following this section outlines a class overview diagram that can help put the following listing in context.
 #### server.js 
-######Purpose / Functionality:
+###### Purpose / Functionality:
 Defines API endpoints. Sets up server configuration 
 
-######Module.exports
+###### Module.exports
     app
 
 #### db/db_api.js
 
-######Purpose / Functionality:
+###### Purpose / Functionality:
 Defines user, device and server status database CRUD functionality. Acts as facade to server.js exposing functionality provided by controllers. Accesses/modifies models through db/index.js by using ```db.Model.[query/find/create...]``` 
 
-######Module.exports
+###### Module.exports
     authenticateUser
     passportDeserializeUser
     createUser
